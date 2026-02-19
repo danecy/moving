@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>D & M — The Next Chapter</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --cream: #f5f0e8;
+    --gold: #c9a84c;
+    --gold-bg: #fffaed;
+    --sage: #5a8f63;
+    --sage-bg: #eef6f0;
+    --terra: #b85c38;
+    --terra-bg: #fdf0eb;
+    --purple: #6a5acd;
+    --purple-bg: #f0eef8;
+    --slate: #4a5f6e;
+    --slate-bg: #eff4f7;
+    --kc-color: #5a8f63;
+    --spain-color: #a04898;
+    --ams-color: #2e86ab;
+    --soft: #e8e2d6;
+    --mid: #ccc5b8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--cream);
+    font-family: 'DM Mono', monospace;
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 2.5rem 1.5rem 5rem;
+  }
+  header { text-align: center; margin-bottom: 2.5rem; }
+  header h1 { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem, 4vw, 3rem); letter-spacing: -0.02em; line-height: 1.1; }
+  header h1 em { font-style: italic; color: var(--gold); }
+  header p { margin-top: 0.5rem; font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--slate); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; justify-content: center; margin-bottom: 2rem; }
+  .legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--slate); }
+  .legend-swatch { width: 22px; height: 10px; border-radius: 2px; }
+
+  .global-toggle {
+    display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+    margin-bottom: 2.5rem;
+  }
+  .toggle-label { font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--slate); }
+  .toggle-label.active { color: var(--ink); font-weight: 500; }
+  .toggle-switch { position: relative; width: 52px; height: 26px; cursor: pointer; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-track { position: absolute; inset: 0; border-radius: 13px; background: #c8c0b4; transition: background 0.25s; }
+  .toggle-switch input:checked + .toggle-track { background: var(--ink); }
+  .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: white; transition: transform 0.25s; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+  .toggle-switch input:checked ~ .toggle-thumb { transform: translateX(26px); }
+
+  .chart { max-width: 1000px; margin: 0 auto; }
+  .node { border-radius: 5px; padding: 0.85rem 1.1rem; width: 100%; }
+  .node-label { font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.55; margin-bottom: 0.25rem; }
+  .node-title { font-family: 'Playfair Display', serif; font-size: 0.95rem; line-height: 1.3; }
+  .node-sub { font-size: 0.63rem; margin-top: 0.35rem; opacity: 0.65; line-height: 1.55; }
+  .n-start   { background: var(--ink); color: var(--cream); text-align: center; }
+  .n-gate    { background: var(--gold-bg); border: 2px solid var(--gold); text-align: center; }
+  .n-gate .node-title { color: #7a5a10; } .n-gate .node-label { color: #a07820; opacity: 1; }
+  .n-decision { background: white; border: 2px solid var(--ink); text-align: center; }
+  .n-action  { background: white; border: 1.5px solid var(--soft); }
+  .n-promo   { background: var(--sage-bg); border: 2px solid var(--sage); text-align: center; }
+  .n-promo .node-title { color: #2e5c38; }
+  .n-nopromo { background: var(--terra-bg); border: 2px solid var(--terra); text-align: center; }
+  .n-nopromo .node-title { color: #7a2e10; }
+
+  .dest {
+    border-radius: 6px; padding: 0.9rem 1rem;
+    cursor: pointer; transition: box-shadow 0.18s, transform 0.18s;
+    text-align: center; width: 100%; position: relative;
+  }
+  .dest:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+  .dest-flag { font-size: 1.3rem; margin-bottom: 0.3rem; }
+  .dest-name { font-family: 'Playfair Display', serif; font-size: 0.9rem; font-weight: 700; }
+  .dest-sub-label { font-size: 0.58rem; margin-top: 0.15rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .dest-hint { font-size: 0.55rem; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.45; margin-top: 0.25rem; }
+
+  .dest-kc    { background: #eef6f0; border: 2px solid var(--kc-color); }
+  .dest-spain { background: #f8f0fc; border: 2px solid var(--spain-color); }
+  .dest-spain-transfer { background: #f0e8fa; border: 2px dashed var(--spain-color); }
+  .dest-ams   { background: #eaf4fa; border: 2px solid var(--ams-color); }
+
+  .corner-tag { position: absolute; top: 0.45rem; right: 0.55rem; font-size: 0.52rem; letter-spacing: 0.08em; text-transform: uppercase; line-height: 1.4; text-align: right; }
+
+  .income-wrap { margin-top: 0.5rem; }
+  .income-badge { display: inline-block; padding: 0.25rem 0.65rem; border-radius: 20px; font-size: 0.78rem; font-weight: 500; letter-spacing: 0.04em; transition: all 0.25s; }
+  .income-kc    { background: #d4edda; color: #1a5c2a; border: 1px solid #a8d5b5; }
+  .income-ams   { background: #d0eaf5; color: #0d4f70; border: 1px solid #8ecae6; }
+  .income-spain { background: #f3e8ff; color: #5a1a8a; border: 1px solid #d4a8f0; }
+  .income-label { font-size: 0.55rem; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.5; margin-top: 0.3rem; }
+
+  .income-both { display: none; font-size: 0.62rem; margin-top: 0.35rem; color: var(--slate); }
+  .income-both .plus { color: var(--sage); font-weight: 600; }
+  body.both-working .income-both { display: block; }
+
+  /* Cards only visible in both-working mode */
+  .both-only { display: none !important; }
+  body.both-working .both-only { display: flex !important; }
+
+  /* Transfer badge label */
+  .transfer-flag {
+    display: inline-block; margin-bottom: 0.4rem;
+    font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 0.15rem 0.5rem; border-radius: 20px;
+    background: var(--gold-bg); color: #7a5010; border: 1px solid var(--gold);
+  }
+
+  .pc-panel { display: none; text-align: left; margin-top: 0.7rem; padding-top: 0.65rem; border-top: 1px solid rgba(0,0,0,0.08); font-size: 0.63rem; line-height: 1.85; }
+  .pc-panel.open { display: block; }
+  .pc-panel .pro::before { content: '＋ '; color: var(--sage); font-weight: 600; }
+  .pc-panel .con::before { content: '－ '; color: var(--terra); font-weight: 600; }
+
+  .dest-blocked { border-radius: 6px; padding: 0.85rem 1rem; background: #f4f4f4; border: 2px dashed #ccc; text-align: center; opacity: 0.5; width: 100%; }
+  .dest-blocked .dest-name { color: #999; font-family: 'Playfair Display', serif; font-size: 0.85rem; }
+  .dest-blocked .block-note { font-size: 0.6rem; color: #aaa; margin-top: 0.3rem; line-height: 1.5; }
+
+  .col { display: flex; flex-direction: column; align-items: center; }
+  .row { display: flex; align-items: flex-start; justify-content: center; }
+  .arrow-down { width: 2px; flex-shrink: 0; position: relative; margin: 0 auto; }
+  .arrow-down::after { content: ''; position: absolute; bottom: -7px; left: 50%; transform: translateX(-50%); border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 8px solid currentColor; }
+  .fork { display: flex; align-items: center; width: 100%; }
+  .fork-line { height: 2px; flex: 1; }
+  .fork-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ink); flex-shrink: 0; }
+  .pill { font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.15rem 0.55rem; border-radius: 20px; white-space: nowrap; }
+  .pill-yes  { background: var(--sage-bg); color: var(--sage); border: 1px solid var(--sage); }
+  .pill-no   { background: var(--terra-bg); color: var(--terra); border: 1px solid var(--terra); }
+  .pill-mid  { background: var(--slate-bg); color: var(--slate); border: 1px solid #aab; }
+  .pill-gold { background: var(--gold-bg); color: #8a6010; border: 1px solid var(--gold); }
+  .gap-xs { height: 0.5rem; } .gap-sm { height: 1rem; } .gap-md { height: 1.5rem; } .gap-lg { height: 2rem; }
+  .opt { font-size: 0.65rem; padding: 0.55rem 0.65rem; text-align: center; border-radius: 4px; border: 1.5px solid #ccc; background: white; width: 100%; }
+  .opt-title { font-family: 'Playfair Display', serif; font-size: 0.72rem; margin-bottom: 0.15rem; }
+  .opt-sub { font-size: 0.6rem; opacity: 0.6; }
+  .opt-ext { border-color: var(--purple); background: var(--purple-bg); }
+  .opt-ext .opt-title { color: var(--purple); }
+
+  .bar-row { display: flex; align-items: center; gap: 0.75rem; }
+  .bar-label { width: 210px; font-size: 0.61rem; text-align: right; flex-shrink: 0; color: var(--slate); line-height: 1.4; }
+  .bar-track { flex: 1; background: #e8e2d6; border-radius: 3px; height: 24px; position: relative; overflow: visible; }
+  .bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
+  .bar-fill-both { height: 100%; border-radius: 3px; position: absolute; top: 0; opacity: 0.4; transition: width 0.4s ease, left 0.4s ease; display: none; }
+  body.both-working .bar-fill-both { display: block; }
+  /* Transfer-only bar rows hidden until both-working */
+  .bar-row.both-only-bar { display: none; }
+  body.both-working .bar-row.both-only-bar { display: flex; }
+  .bar-value { position: absolute; top: 50%; transform: translateY(-50%); font-size: 0.64rem; font-weight: 500; white-space: nowrap; transition: all 0.3s; }
+  .bar-tag { font-size: 0.52rem; opacity: 0.6; margin-left: 0.2rem; }
+
+  @media (max-width: 700px) {
+    .two-tracks { flex-direction: column !important; align-items: center !important; }
+    .two-tracks > div { width: 100% !important; max-width: 400px !important; }
+    .dest-row { grid-template-columns: 1fr 1fr !important; }
+    .bar-label { width: 130px; font-size: 0.56rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>D & M — <em>The Next Chapter</em></h1>
+  <p>A decision map for the road ahead</p>
+</header>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-swatch" style="background:var(--gold);"></div>Visa Gate</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:var(--sage);"></div>Resolved / Promoted</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:var(--terra);"></div>Blocked / Not Promoted</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:var(--kc-color);"></div>Kansas City</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:var(--spain-color);"></div>Spain (BCN or MAD)</div>
+  <div class="legend-item"><div class="legend-swatch" style="background:var(--ams-color);"></div>Amsterdam</div>
+</div>
+
+<!-- GLOBAL TOGGLE -->
+<div class="global-toggle">
+  <span class="toggle-label active" id="lbl-d">D only</span>
+  <label class="toggle-switch">
+    <input type="checkbox" id="bothToggle" onchange="setBothWorking(this.checked)">
+    <div class="toggle-track"></div>
+    <div class="toggle-thumb"></div>
+  </label>
+  <span class="toggle-label" id="lbl-both">Both working</span>
+</div>
+
+<div class="chart">
+<div class="col">
+
+  <!-- START -->
+  <div class="node n-start" style="max-width:420px; border-radius:8px;">
+    <div class="node-label">Where we are now</div>
+    <div class="node-title">D & M at an Inflection Point</div>
+    <div class="node-sub">Two parallel tracks — visa status & career path — must be evaluated together</div>
+  </div>
+  <div class="gap-md"></div>
+
+  <div class="fork" style="width:65%; max-width:600px;">
+    <div class="fork-line" style="background:var(--gold);"></div>
+    <div class="fork-dot"></div>
+    <div class="fork-line" style="background:var(--ink);"></div>
+  </div>
+  <div class="gap-xs"></div>
+
+  <!-- TWO TRACKS -->
+  <div class="row two-tracks" style="width:100%; gap:2rem; align-items:flex-start;">
+
+    <!-- TRACK 1: VISA -->
+    <div class="col" style="flex:1; max-width:450px;">
+      <span class="pill pill-gold" style="margin-bottom:0.6rem;">Track 1 — M's Visa Status</span>
+      <div class="arrow-down" style="height:18px; color:var(--gold); background:var(--gold);"></div>
+      <div class="gap-xs"></div>
+      <div class="node n-gate">
+        <div class="node-label">Foundational Gate — gates all USA paths</div>
+        <div class="node-title">Is M's US Visa situation resolved?</div>
+        <div class="node-sub">Guatemala visa freeze currently in effect</div>
+      </div>
+      <div class="gap-sm"></div>
+      <div class="fork" style="width:80%;"><div class="fork-line" style="background:var(--sage);"></div><div class="fork-dot"></div><div class="fork-line" style="background:var(--terra);"></div></div>
+      <div class="gap-xs"></div>
+      <div class="row" style="width:80%; justify-content:space-between;"><span class="pill pill-yes">Resolved</span><span class="pill pill-no">Not Resolved</span></div>
+      <div class="gap-xs"></div>
+      <div class="row" style="width:100%; gap:0.75rem; align-items:flex-start;">
+        <div class="col" style="flex:1;">
+          <div class="arrow-down" style="height:16px; color:var(--sage); background:var(--sage);"></div>
+          <div class="gap-xs"></div>
+          <div class="node n-action" style="border-color:var(--sage); text-align:center; padding:0.65rem;"><div class="node-label" style="color:var(--sage); opacity:1;">Two resolution paths</div></div>
+          <div class="gap-xs"></div>
+          <div class="fork" style="width:80%;"><div class="fork-line" style="background:#bbb;"></div><div class="fork-dot" style="background:var(--sage); width:8px; height:8px;"></div><div class="fork-line" style="background:#bbb;"></div></div>
+          <div class="gap-xs"></div>
+          <div class="row" style="gap:0.5rem; width:100%;">
+            <div class="node n-action" style="flex:1; padding:0.6rem; text-align:center; border-color:#ccc;"><div style="font-family:'Playfair Display',serif; font-size:0.75rem; margin-bottom:0.2rem;">A) Freeze Lifts</div><div style="font-size:0.6rem; opacity:0.6;">Guatemalan visa resumes normally</div></div>
+            <div class="node n-action" style="flex:1; padding:0.6rem; text-align:center; border-color:var(--gold); background:var(--gold-bg);"><div style="font-family:'Playfair Display',serif; font-size:0.75rem; margin-bottom:0.2rem; color:#7a5a10;">B) Spanish → US Visa</div><div style="font-size:0.6rem; opacity:0.7;">Use EU citizenship to obtain US visa</div></div>
+          </div>
+          <div class="gap-xs"></div>
+          <div class="arrow-down" style="height:16px; color:var(--sage); background:var(--sage);"></div>
+          <div class="gap-xs"></div>
+          <div class="node" style="background:var(--sage-bg); border:2px solid var(--sage); text-align:center; padding:0.65rem; border-radius:5px;"><div class="node-title" style="font-size:0.82rem; color:#2e5c38;">✓ USA remains on the table</div><div class="node-sub">Kansas City is a viable destination</div></div>
+        </div>
+        <div class="col" style="flex:1;">
+          <div class="arrow-down" style="height:16px; color:var(--terra); background:var(--terra);"></div>
+          <div class="gap-xs"></div>
+          <div class="node n-action" style="border-color:var(--terra); background:var(--terra-bg); text-align:center; padding:0.65rem;"><div class="node-title" style="font-size:0.78rem; color:#7a2e10;">Freeze persists &amp; no alternate US visa path</div></div>
+          <div class="gap-xs"></div>
+          <div class="arrow-down" style="height:16px; color:var(--terra); background:var(--terra);"></div>
+          <div class="gap-xs"></div>
+          <div class="node" style="background:#f4f4f4; border:2px dashed #bbb; text-align:center; padding:0.65rem; border-radius:5px;"><div class="node-title" style="font-size:0.82rem; color:#999;">✗ Kansas City removed</div><div class="node-sub" style="color:#aaa;">EU move becomes necessary, not just an option</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRACK 2: CAREER -->
+    <div class="col" style="flex:1; max-width:450px;">
+      <span class="pill pill-mid" style="margin-bottom:0.6rem;">Track 2 — D's Career Path</span>
+      <div class="arrow-down" style="height:18px; color:var(--ink); background:var(--ink);"></div>
+      <div class="gap-xs"></div>
+      <div class="node n-decision"><div class="node-label">First, wait on</div><div class="node-title">D's Promotion Outcome at Zendesk</div></div>
+      <div class="gap-sm"></div>
+      <div class="fork" style="width:80%;"><div class="fork-line" style="background:var(--sage);"></div><div class="fork-dot"></div><div class="fork-line" style="background:var(--terra);"></div></div>
+      <div class="gap-xs"></div>
+      <div class="row" style="width:80%; justify-content:space-between;"><span class="pill pill-yes">Promoted</span><span class="pill pill-no">Not Promoted</span></div>
+      <div class="gap-xs"></div>
+      <div class="row" style="width:100%; gap:0.75rem; align-items:flex-start;">
+        <div class="col" style="flex:1;">
+          <div class="arrow-down" style="height:16px; color:var(--sage); background:var(--sage);"></div>
+          <div class="gap-xs"></div>
+          <div class="node n-promo" style="padding:0.65rem;"><div class="node-label" style="color:var(--sage); opacity:1;">Path A</div><div class="node-title" style="font-size:0.85rem;">D Gets Promoted</div><div class="node-sub">New leverage — stay or go?</div></div>
+          <div class="gap-xs"></div>
+          <div class="fork" style="width:90%;"><div class="fork-line" style="background:#bbb;"></div><div class="fork-dot" style="background:var(--sage); width:8px; height:8px;"></div><div class="fork-line" style="background:#bbb;"></div></div>
+          <div class="gap-xs"></div>
+          <div style="display:flex; flex-direction:column; gap:0.4rem; width:100%;">
+            <div class="opt"><div class="opt-title">Stay Zendesk — KC</div><div class="opt-sub">Promotion secured, remain in place</div></div>
+            <div class="opt"><div class="opt-title">Zendesk Internal Transfer — Spain</div><div class="opt-sub">BCN or MAD, with promotion</div></div>
+            <div class="opt"><div class="opt-title">Zendesk Internal Transfer — Amsterdam</div><div class="opt-sub">AMS office, with promotion</div></div>
+            <div class="opt opt-ext"><div class="opt-title">External Staff+ PM — Spain</div><div class="opt-sub">BCN or MAD · Staff+ only</div></div>
+            <div class="opt opt-ext"><div class="opt-title">External Senior or Staff+ PM — Amsterdam</div><div class="opt-sub">AMS · both levels available</div></div>
+          </div>
+        </div>
+        <div class="col" style="flex:1;">
+          <div class="arrow-down" style="height:16px; color:var(--terra); background:var(--terra);"></div>
+          <div class="gap-xs"></div>
+          <div class="node n-nopromo" style="padding:0.65rem;"><div class="node-label" style="color:var(--terra); opacity:1;">Path B</div><div class="node-title" style="font-size:0.85rem;">D Not Promoted</div><div class="node-sub">Same role continues</div></div>
+          <div class="gap-xs"></div>
+          <div class="fork" style="width:90%;"><div class="fork-line" style="background:#bbb;"></div><div class="fork-dot" style="background:var(--terra); width:8px; height:8px;"></div><div class="fork-line" style="background:#bbb;"></div></div>
+          <div class="gap-xs"></div>
+          <div style="display:flex; flex-direction:column; gap:0.4rem; width:100%;">
+            <div class="opt"><div class="opt-title">Stay Same Job — KC</div><div class="opt-sub">Same role, same location</div></div>
+            <div class="dest-blocked"><div class="dest-name">✗ Zendesk Transfer — Spain</div><div class="block-note">Not available without promotion</div></div>
+            <div class="opt"><div class="opt-title">Zendesk Internal Transfer — Amsterdam</div><div class="opt-sub">AMS office, same level</div></div>
+            <div class="opt opt-ext"><div class="opt-title">External Staff+ PM — Spain</div><div class="opt-sub">BCN or MAD · Staff+ only</div></div>
+            <div class="opt opt-ext"><div class="opt-title">External Senior or Staff+ PM — Amsterdam</div><div class="opt-sub">AMS · both levels available</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CONVERGENCE -->
+  <div class="gap-lg"></div>
+  <div style="font-size:0.6rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--slate); opacity:0.65; text-align:center;">Both tracks converge → destination outcomes</div>
+  <div class="gap-sm"></div>
+  <div class="arrow-down" style="height:26px; color:var(--ink); background:var(--ink);"></div>
+  <div class="gap-sm"></div>
+  <div class="node n-decision" style="max-width:460px;"><div class="node-label">Final outcome</div><div class="node-title">Where do D & M land?</div><div class="node-sub">Visa track gates KC &nbsp;·&nbsp; Career track shapes which role gets you there</div></div>
+  <div class="gap-sm"></div>
+  <div class="arrow-down" style="height:26px; color:var(--ink); background:var(--ink);"></div>
+  <div class="gap-sm"></div>
+
+  <!-- DESTINATION CARDS -->
+  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; width:100%; max-width:900px;" class="dest-row">
+
+    <!-- ── KANSAS CITY ── -->
+    <div class="col" style="gap:0.75rem;">
+      <div class="dest dest-kc" onclick="togglePC(this)">
+        <div class="corner-tag" style="color:var(--sage);">Promoted · Zendesk</div>
+        <div class="dest-flag">🏙️</div>
+        <div class="dest-name">Kansas City</div>
+        <div class="dest-sub-label" style="color:var(--kc-color);">Visa gate required</div>
+        <div class="income-wrap">
+          <div class="income-badge income-kc" data-base="4775" data-add="4072">€4,775 / mo</div>
+          <div class="income-both"><span class="plus">＋ €4,072</span> M working = <strong>€8,847 / mo</strong></div>
+        </div>
+        <div class="income-label">household disposable · Zendesk</div>
+        <div class="dest-hint">click for pros &amp; cons</div>
+        <div class="pc-panel">
+          <div class="pro">Highest D-only income of all scenarios</div>
+          <div class="pro">Both working: €8,847 — strongest combined total</div>
+          <div class="pro">Promotion secured — strong career momentum</div>
+          <div class="pro">Established community &amp; network</div>
+          <div class="con">Only viable if visa resolved</div>
+          <div class="con">M's long-term US status uncertain</div>
+          <div class="con">Removed entirely if freeze persists</div>
+        </div>
+      </div>
+      <div class="dest dest-kc" onclick="togglePC(this)" style="opacity:0.88;">
+        <div class="corner-tag" style="color:var(--terra);">No Promotion · Zendesk</div>
+        <div class="dest-flag">🏙️</div>
+        <div class="dest-name">Kansas City</div>
+        <div class="dest-sub-label" style="color:var(--kc-color);">Visa gate required</div>
+        <div class="income-wrap">
+          <div class="income-badge income-kc" data-base="4022" data-add="4072">€4,022 / mo</div>
+          <div class="income-both"><span class="plus">＋ €4,072</span> M working = <strong>€8,094 / mo</strong></div>
+        </div>
+        <div class="income-label">household disposable · Zendesk</div>
+        <div class="dest-hint">click for pros &amp; cons</div>
+        <div class="pc-panel">
+          <div class="pro">Strong income vs. all EU options</div>
+          <div class="pro">Both working: €8,094 — second highest combined</div>
+          <div class="pro">Low disruption, familiar environment</div>
+          <div class="con">No career progression achieved</div>
+          <div class="con">Requires visa resolution to remain viable</div>
+          <div class="con">Risk of stagnation without clear next step</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SPAIN ── -->
+    <div class="col" style="gap:0.75rem;">
+
+      <!-- Spain · Zendesk Promoted -->
+      <div class="dest dest-spain" onclick="togglePC(this)">
+        <div class="corner-tag" style="color:var(--sage);">Promoted · Zendesk</div>
+        <div class="dest-flag">🇪🇸</div>
+        <div class="dest-name">Spain</div>
+        <div class="dest-sub-label" style="color:var(--spain-color);">Barcelona or Madrid · Always viable</div>
+        <div class="income-wrap">
+          <div class="income-badge income-spain" data-base="1656" data-add="4108">€1,656 / mo</div>
+          <div class="income-both"><span class="plus">＋ €4,108</span> M working = <strong>€5,764 / mo</strong></div>
+        </div>
+        <div class="income-label">household disposable · Zendesk</div>
+        <div class="dest-hint">click for pros &amp; cons</div>
+        <div class="pc-panel">
+          <div class="pro">M's EU rights fully active</div>
+          <div class="pro">M's culture, language &amp; family proximity</div>
+          <div class="pro">Both working transforms the picture: €5,764/mo</div>
+          <div class="pro">Permanently resolves visa risk</div>
+          <div class="con">Lowest D-only income of all scenarios</div>
+          <div class="con">D-only: €3,119/mo less than KC promoted</div>
+          <div class="con">Language barrier for D initially</div>
+        </div>
+      </div>
+
+      <!-- Spain · Zendesk Promoted + M Transfer (both-working only) -->
+      <div class="both-only" style="width:100%; flex-direction:column; gap:0;">
+        <div style="font-size:0.6rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); opacity:0.8; margin-bottom:0.4rem; text-align:center;">↓ if M's company transfers her to Spain</div>
+        <div class="dest dest-spain-transfer" onclick="togglePC(this)" style="width:100%;">
+          <div class="corner-tag" style="color:var(--sage);">Promoted · Zendesk</div>
+          <div class="dest-flag">🇪🇸</div>
+          <div class="dest-name">Spain</div>
+          <div class="dest-sub-label" style="color:var(--spain-color);">Barcelona or Madrid</div>
+          <div class="transfer-flag">M's company transfer</div>
+          <div class="income-wrap">
+            <div class="income-badge income-spain">€4,184 / mo</div>
+            <div class="income-both"><span class="plus">＋ €2,528</span> M company transfer = <strong>€4,184 / mo</strong></div>
+          </div>
+          <div class="income-label">household disposable · both working</div>
+          <div class="dest-hint">click for pros &amp; cons</div>
+          <div class="pc-panel">
+            <div class="pro">M keeps her current employer — no job search risk</div>
+            <div class="pro">Company-sponsored relocation support likely</div>
+            <div class="pro">Permanently resolves visa risk</div>
+            <div class="con">€1,580/mo less than M finding independent work in Spain</div>
+            <div class="con">M's role/package may change under transfer terms</div>
+            <div class="con">Language barrier for D initially</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Spain · External Staff+ -->
+      <div class="dest dest-spain" onclick="togglePC(this)" style="opacity:0.88;">
+        <div class="corner-tag" style="color:var(--purple);">External · Staff+</div>
+        <div class="dest-flag">🇪🇸</div>
+        <div class="dest-name">Spain</div>
+        <div class="dest-sub-label" style="color:var(--spain-color);">Barcelona or Madrid · Always viable</div>
+        <div class="income-wrap">
+          <div class="income-badge income-spain" data-base="2555" data-add="4108">€2,555 / mo</div>
+          <div class="income-both"><span class="plus">＋ €4,108</span> M working = <strong>€6,663 / mo</strong></div>
+        </div>
+        <div class="income-label">household disposable · external Staff+</div>
+        <div class="dest-hint">click for pros &amp; cons</div>
+        <div class="pc-panel">
+          <div class="pro">€899/mo more than Zendesk Spain internal (D only)</div>
+          <div class="pro">Both working: €6,663/mo — solid combined total</div>
+          <div class="pro">Breaks Zendesk ceiling — Staff+ title</div>
+          <div class="pro">Available in Path A or Path B</div>
+          <div class="pro">Permanently resolves visa risk</div>
+          <div class="con">Staff+ only — no Senior external path in Spain</div>
+          <div class="con">D-only: €2,220/mo less than KC promoted</div>
+          <div class="con">New company risk</div>
+        </div>
+      </div>
+
+      <!-- Spain · External Staff+ + M Transfer (both-working only) -->
+      <div class="both-only" style="width:100%; flex-direction:column; gap:0;">
+        <div style="font-size:0.6rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); opacity:0.8; margin-bottom:0.4rem; text-align:center;">↓ if M's company transfers her to Spain</div>
+        <div class="dest dest-spain-transfer" onclick="togglePC(this)" style="width:100%; opacity:0.88;">
+          <div class="corner-tag" style="color:var(--purple);">External · Staff+</div>
+          <div class="dest-flag">🇪🇸</div>
+          <div class="dest-name">Spain</div>
+          <div class="dest-sub-label" style="color:var(--spain-color);">Barcelona or Madrid</div>
+          <div class="transfer-flag">M's company transfer</div>
+          <div class="income-wrap">
+            <div class="income-badge income-spain">€5,083 / mo</div>
+            <div class="income-both"><span class="plus">＋ €2,528</span> M company transfer = <strong>€5,083 / mo</strong></div>
+          </div>
+          <div class="income-label">household disposable · both working</div>
+          <div class="dest-hint">click for pros &amp; cons</div>
+          <div class="pc-panel">
+            <div class="pro">M keeps her current employer — no job search risk</div>
+            <div class="pro">D gets Staff+ title at new company</div>
+            <div class="pro">Company-sponsored relocation support likely</div>
+            <div class="pro">Permanently resolves visa risk</div>
+            <div class="pro">Available in Path A or Path B</div>
+            <div class="con">€1,580/mo less than M finding independent work in Spain</div>
+            <div class="con">M's role/package may change under transfer terms</div>
+            <div class="con">Language barrier for D initially</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── AMSTERDAM ── -->
+    <div class="col" style="gap:0.75rem;">
+      <div class="dest dest-ams" onclick="togglePC(this)">
+        <div class="corner-tag" style="color:var(--sage);">Promoted · Zendesk</div>
+        <div class="dest-flag">🇳🇱</div>
+        <div class="dest-name">Amsterdam</div>
+        <div class="dest-sub-label" style="color:var(--ams-color);">Always viable</div>
+        <div class="income-wrap">
+          <div class="income-badge income-ams" data-base="2823" data-add="4635">€2,823 / mo</div>
+          <div class="income-both"><span class="plus">＋ €4,635</span> M working = <strong>€7,458 / mo</strong></div>
+        </div>
+        <div class="income-label">household disposable · Zendesk</div>
+        <div class="dest-hint">click for pros &amp; cons</div>
+        <div class="pc-panel">
+          <div class="pro">Best Zendesk EU disposable income</div>
+          <div class="pro">Both working: €7,458 — strongest EU combined</div>
+          <div class="pro">English-first environment</div>
+          <div class="pro">EU residency for M via Spanish citizenship</div>
+          <div class="pro">Permanently resolves visa risk</div>
+          <div class="con">Very high cost of living</div>
+          <div class="con">Colder climate</div>
+          <div class="con">Further from M's family &amp; culture</div>
+        </div>
+      </div>
+      <div class="dest dest-ams" onclick="togglePC(this)" style="opacity:0.88;">
+        <div class="corner-tag" style="color:var(--terra);">No Promo · Zendesk</div>
+        <div class="dest-flag">🇳🇱</div>
+        <div class="dest-name">Amsterdam</div>
+        <div class="dest-sub-label" style="color:var(--ams-color);">Always viable</div>
+        <div class="income-wrap">
+          <div class="income-badge income-ams" data-base="2534" data-add="4635">€2,534 / mo</div>
+          <div class="income-both"><span class="plus">＋ €4,635</span> M working = <strong>€7,169 / mo</strong></div>
+        </div>
+        <div class="income-label">household disposable · Zendesk</div>
+        <div class="dest-hint">click for pros &amp; cons</div>
+        <div class="pc-panel">
+          <div class="pro">EU move available regardless of promotion</div>
+          <div class="pro">Both working: €7,169/mo</div>
+          <div class="pro">English-first environment</div>
+          <div class="pro">EU residency for M · Permanently resolves visa risk</div>
+          <div class="con">No career progression in move</div>
+          <div class="con">Very high cost of living</div>
+          <div class="con">Further from M's family &amp; culture</div>
+        </div>
+      </div>
+      <div class="dest dest-ams" onclick="togglePC(this)" style="opacity:0.88;">
+        <div class="corner-tag" style="color:var(--purple);">External · Senior</div>
+        <div class="dest-flag">🇳🇱</div>
+        <div class="dest-name">Amsterdam</div>
+        <div class="dest-sub-label" style="color:var(--ams-color);">Always viable</div>
+        <div class="income-wrap">
+          <div class="income-badge income-ams" data-base="2534" data-add="4635">€2,534 / mo</div>
+          <div class="income-both"><span class="plus">＋ €4,635</span> M working = <strong>€7,169 / mo</strong></div>
+        </div>
+        <div class="income-label">household disposable · external Senior</div>
+        <div class="dest-hint">click for pros &amp; cons</div>
+        <div class="pc-panel">
+          <div class="pro">Breaks Zendesk ceiling — new employer</div>
+          <div class="pro">Available in Path A or Path B</div>
+          <div class="pro">EU residency for M · Permanently resolves visa risk</div>
+          <div class="con">Same income as internal no-promo AMS</div>
+          <div class="con">Senior title — lower ceiling than Staff+</div>
+          <div class="con">New company risk · Very high cost of living</div>
+        </div>
+      </div>
+      <div class="dest dest-ams" onclick="togglePC(this)" style="opacity:0.88;">
+        <div class="corner-tag" style="color:var(--purple);">External · Staff+</div>
+        <div class="dest-flag">🇳🇱</div>
+        <div class="dest-name">Amsterdam</div>
+        <div class="dest-sub-label" style="color:var(--ams-color);">Always viable</div>
+        <div class="income-wrap">
+          <div class="income-badge income-ams" data-base="2823" data-add="4635">€2,823 / mo</div>
+          <div class="income-both"><span class="plus">＋ €4,635</span> M working = <strong>€7,458 / mo</strong></div>
+        </div>
+        <div class="income-label">household disposable · external Staff+</div>
+        <div class="dest-hint">click for pros &amp; cons</div>
+        <div class="pc-panel">
+          <div class="pro">Highest EU disposable income (D only)</div>
+          <div class="pro">Both working: €7,458 — strongest EU combined</div>
+          <div class="pro">Staff+ title — best career position in EU</div>
+          <div class="pro">Available in Path A or Path B</div>
+          <div class="pro">EU residency for M · Permanently resolves visa risk</div>
+          <div class="con">Very high cost of living</div>
+          <div class="con">New company risk</div>
+          <div class="con">Further from M's family &amp; culture</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end dest grid -->
+
+  <!-- BAR CHART -->
+  <div style="margin-top:2.5rem; max-width:740px; width:100%;">
+    <div style="font-size:0.6rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--slate); opacity:0.65; text-align:center; margin-bottom:1rem;">
+      Household disposable income comparison (€ / month)
+    </div>
+    <div style="display:flex; flex-direction:column; gap:0.6rem;" id="barChart">
+
+      <div class="bar-row" data-base="4775" data-both="8847">
+        <div class="bar-label">KC · Promoted</div>
+        <div class="bar-track">
+          <div class="bar-fill" style="background:var(--kc-color); opacity:0.8; width:100%;"></div>
+          <div class="bar-fill-both" style="background:var(--kc-color);"></div>
+          <span class="bar-value" style="right:0.5rem; color:white;">€4,775 <span class="bar-tag">Zendesk</span></span>
+        </div>
+      </div>
+      <div class="bar-row" data-base="4022" data-both="8094">
+        <div class="bar-label">KC · No Promotion</div>
+        <div class="bar-track">
+          <div class="bar-fill" style="background:var(--kc-color); opacity:0.55; width:84.2%;"></div>
+          <div class="bar-fill-both" style="background:var(--kc-color);"></div>
+          <span class="bar-value" style="left:calc(84.2% + 0.4rem); color:var(--ink);">€4,022 <span class="bar-tag">Zendesk</span></span>
+        </div>
+      </div>
+      <div class="bar-row" data-base="2823" data-both="7458">
+        <div class="bar-label">AMS · Promoted / Ext Staff+</div>
+        <div class="bar-track">
+          <div class="bar-fill" style="background:var(--ams-color); opacity:0.8; width:59.1%;"></div>
+          <div class="bar-fill-both" style="background:var(--ams-color);"></div>
+          <span class="bar-value" style="left:calc(59.1% + 0.4rem); color:var(--ink);">€2,823 <span class="bar-tag">Zendesk / Ext Staff+</span></span>
+        </div>
+      </div>
+      <div class="bar-row" data-base="2555" data-both="6663">
+        <div class="bar-label">Spain · Ext Staff+</div>
+        <div class="bar-track">
+          <div class="bar-fill" style="background:var(--spain-color); opacity:0.7; width:53.5%;"></div>
+          <div class="bar-fill-both" style="background:var(--spain-color);"></div>
+          <span class="bar-value" style="left:calc(53.5% + 0.4rem); color:var(--ink);">€2,555 <span class="bar-tag">BCN or MAD</span></span>
+        </div>
+      </div>
+      <div class="bar-row" data-base="2534" data-both="7169">
+        <div class="bar-label">AMS · No Promo / Ext Senior</div>
+        <div class="bar-track">
+          <div class="bar-fill" style="background:var(--ams-color); opacity:0.55; width:53.1%;"></div>
+          <div class="bar-fill-both" style="background:var(--ams-color);"></div>
+          <span class="bar-value" style="left:calc(53.1% + 0.4rem); color:var(--ink);">€2,534 <span class="bar-tag">Zendesk / Ext Senior</span></span>
+        </div>
+      </div>
+      <div class="bar-row" data-base="1656" data-both="5764">
+        <div class="bar-label">Spain · Zendesk (Promoted)</div>
+        <div class="bar-track">
+          <div class="bar-fill" style="background:var(--spain-color); opacity:0.55; width:34.7%;"></div>
+          <div class="bar-fill-both" style="background:var(--spain-color);"></div>
+          <span class="bar-value" style="left:calc(34.7% + 0.4rem); color:var(--ink);">€1,656 <span class="bar-tag">Zendesk</span></span>
+        </div>
+      </div>
+      <!-- M Transfer rows — both-working only -->
+      <div class="bar-row both-only-bar" data-base="5083" data-both="5083">
+        <div class="bar-label">Spain Ext Staff+ · M co. transfer</div>
+        <div class="bar-track">
+          <div class="bar-fill" style="background:var(--spain-color); opacity:0.5; width:57.5%;"></div>
+          <div class="bar-fill-both" style="background:var(--spain-color);"></div>
+          <span class="bar-value" style="left:calc(57.5% + 0.4rem); color:var(--ink);">€5,083 <span class="bar-tag">M co. transfer</span></span>
+        </div>
+      </div>
+      <div class="bar-row both-only-bar" data-base="4184" data-both="4184">
+        <div class="bar-label">Spain Zendesk · M co. transfer</div>
+        <div class="bar-track">
+          <div class="bar-fill" style="background:var(--spain-color); opacity:0.4; width:47.3%;"></div>
+          <div class="bar-fill-both" style="background:var(--spain-color);"></div>
+          <span class="bar-value" style="left:calc(47.3% + 0.4rem); color:var(--ink);">€4,184 <span class="bar-tag">M co. transfer</span></span>
+        </div>
+      </div>
+
+    </div>
+    <div style="font-size:0.55rem; color:var(--slate); opacity:0.5; text-align:center; margin-top:0.75rem;" id="chartNote">
+      D working only · All figures household / month / euros
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+  function togglePC(el) {
+    const panel = el.querySelector('.pc-panel');
+    if (panel) panel.classList.toggle('open');
+  }
+
+  function setBothWorking(on) {
+    document.body.classList.toggle('both-working', on);
+    document.getElementById('lbl-d').classList.toggle('active', !on);
+    document.getElementById('lbl-both').classList.toggle('active', on);
+
+    // Update income badges that have data-base/data-add
+    document.querySelectorAll('.income-badge[data-base]').forEach(badge => {
+      const base = parseInt(badge.dataset.base);
+      const add  = parseInt(badge.dataset.add);
+      badge.textContent = on
+        ? '€' + (base + add).toLocaleString() + ' / mo'
+        : '€' + base.toLocaleString() + ' / mo';
+    });
+
+    // Bar chart update
+    const MAX_D    = 4775;
+    const MAX_BOTH = 8847;
+    const MAX = on ? MAX_BOTH : MAX_D;
+
+    document.querySelectorAll('.bar-row').forEach(row => {
+      const base  = parseInt(row.dataset.base);
+      const both  = parseInt(row.dataset.both);
+      const basePct = (base / MAX * 100).toFixed(1);
+      const fill  = row.querySelector('.bar-fill');
+      const fillB = row.querySelector('.bar-fill-both');
+      const label = row.querySelector('.bar-value');
+
+      fill.style.width = basePct + '%';
+
+      if (on) {
+        const bothPct = (both / MAX * 100).toFixed(1);
+        const addPct  = ((both - base) / MAX * 100).toFixed(1);
+        fillB.style.left  = basePct + '%';
+        fillB.style.width = addPct + '%';
+        label.style.left  = 'calc(' + bothPct + '% + 0.4rem)';
+        label.style.right = 'auto';
+        label.style.color = 'var(--ink)';
+        // For the transfer-only rows (base===both), no additive bar
+        if (base === both) { fillB.style.width = '0%'; }
+        label.innerHTML = '€' + both.toLocaleString();
+      } else {
+        fillB.style.width = '0%';
+        if (base === MAX_D) {
+          label.style.right = '0.5rem'; label.style.left = 'auto'; label.style.color = 'white';
+        } else {
+          label.style.left = 'calc(' + basePct + '% + 0.4rem)';
+          label.style.right = 'auto'; label.style.color = 'var(--ink)';
+        }
+        label.innerHTML = '€' + base.toLocaleString();
+      }
+    });
+
+    document.getElementById('chartNote').textContent = on
+      ? 'Both D & M working · All figures household / month / euros'
+      : 'D working only · All figures household / month / euros';
+  }
+</script>
+</body>
+</html>
