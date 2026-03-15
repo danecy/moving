@@ -3,701 +3,556 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>D & M — The Next Chapter</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<title>EU City Lifestyle Comparison</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #1a1a2e;
-    --cream: #f5f0e8;
-    --gold: #c9a84c;
-    --gold-bg: #fffaed;
-    --sage: #5a8f63;
-    --sage-bg: #eef6f0;
-    --terra: #b85c38;
-    --terra-bg: #fdf0eb;
-    --purple: #6a5acd;
-    --purple-bg: #f0eef8;
-    --slate: #4a5f6e;
-    --slate-bg: #eff4f7;
-    --kc-color: #5a8f63;
-    --spain-color: #a04898;
-    --ams-color: #2e86ab;
-    --soft: #e8e2d6;
-    --mid: #ccc5b8;
+    --bg: #0c0c14;
+    --text: #d4d0c8;
+    --text-bright: #f0ece4;
+    --text-dim: #666;
+    --text-dimmer: #555;
+    --surface: rgba(255,255,255,0.02);
+    --surface-hover: rgba(255,255,255,0.04);
+    --city-color: #C4122E;
+    --city-accent: #ff6b6b;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
   body {
-    background: var(--cream);
-    font-family: 'DM Mono', monospace;
-    color: var(--ink);
+    font-family: 'Source Serif 4', Georgia, serif;
+    background: var(--bg);
+    color: var(--text);
     min-height: 100vh;
-    padding: 2.5rem 1.5rem 5rem;
-  }
-  header { text-align: center; margin-bottom: 2.5rem; }
-  header h1 { font-family: 'Playfair Display', serif; font-size: clamp(1.8rem, 4vw, 3rem); letter-spacing: -0.02em; line-height: 1.1; }
-  header h1 em { font-style: italic; color: var(--gold); }
-  header p { margin-top: 0.5rem; font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--slate); }
-
-  .legend { display: flex; flex-wrap: wrap; gap: 0.75rem 1.5rem; justify-content: center; margin-bottom: 2rem; }
-  .legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--slate); }
-  .legend-swatch { width: 22px; height: 10px; border-radius: 2px; }
-
-  .global-toggle {
-    display: flex; align-items: center; justify-content: center; gap: 0.75rem;
-    margin-bottom: 2.5rem;
-  }
-  .toggle-label { font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--slate); }
-  .toggle-label.active { color: var(--ink); font-weight: 500; }
-  .toggle-switch { position: relative; width: 52px; height: 26px; cursor: pointer; }
-  .toggle-switch input { opacity: 0; width: 0; height: 0; }
-  .toggle-track { position: absolute; inset: 0; border-radius: 13px; background: #c8c0b4; transition: background 0.25s; }
-  .toggle-switch input:checked + .toggle-track { background: var(--ink); }
-  .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: white; transition: transform 0.25s; box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
-  .toggle-switch input:checked ~ .toggle-thumb { transform: translateX(26px); }
-
-  .chart { max-width: 1000px; margin: 0 auto; }
-  .node { border-radius: 5px; padding: 0.85rem 1.1rem; width: 100%; }
-  .node-label { font-size: 0.58rem; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.55; margin-bottom: 0.25rem; }
-  .node-title { font-family: 'Playfair Display', serif; font-size: 0.95rem; line-height: 1.3; }
-  .node-sub { font-size: 0.63rem; margin-top: 0.35rem; opacity: 0.65; line-height: 1.55; }
-  .n-start   { background: var(--ink); color: var(--cream); text-align: center; }
-  .n-gate    { background: var(--gold-bg); border: 2px solid var(--gold); text-align: center; }
-  .n-gate .node-title { color: #7a5a10; } .n-gate .node-label { color: #a07820; opacity: 1; }
-  .n-decision { background: white; border: 2px solid var(--ink); text-align: center; }
-  .n-action  { background: white; border: 1.5px solid var(--soft); }
-  .n-promo   { background: var(--sage-bg); border: 2px solid var(--sage); text-align: center; }
-  .n-promo .node-title { color: #2e5c38; }
-  .n-nopromo { background: var(--terra-bg); border: 2px solid var(--terra); text-align: center; }
-  .n-nopromo .node-title { color: #7a2e10; }
-
-  .dest {
-    border-radius: 6px; padding: 0.9rem 1rem;
-    cursor: pointer; transition: box-shadow 0.18s, transform 0.18s;
-    text-align: center; width: 100%; position: relative;
-  }
-  .dest:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
-  .dest-flag { font-size: 1.3rem; margin-bottom: 0.3rem; }
-  .dest-name { font-family: 'Playfair Display', serif; font-size: 0.9rem; font-weight: 700; }
-  .dest-sub-label { font-size: 0.58rem; margin-top: 0.15rem; letter-spacing: 0.08em; text-transform: uppercase; }
-  .dest-hint { font-size: 0.55rem; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.45; margin-top: 0.25rem; }
-
-  .dest-kc    { background: #eef6f0; border: 2px solid var(--kc-color); }
-  .dest-spain { background: #f8f0fc; border: 2px solid var(--spain-color); }
-  .dest-spain-transfer { background: #f0e8fa; border: 2px dashed var(--spain-color); }
-  .dest-ams   { background: #eaf4fa; border: 2px solid var(--ams-color); }
-
-  .corner-tag { position: absolute; top: 0.45rem; right: 0.55rem; font-size: 0.52rem; letter-spacing: 0.08em; text-transform: uppercase; line-height: 1.4; text-align: right; }
-
-  .income-wrap { margin-top: 0.5rem; }
-  .income-badge { display: inline-block; padding: 0.25rem 0.65rem; border-radius: 20px; font-size: 0.78rem; font-weight: 500; letter-spacing: 0.04em; transition: all 0.25s; }
-  .income-kc    { background: #d4edda; color: #1a5c2a; border: 1px solid #a8d5b5; }
-  .income-ams   { background: #d0eaf5; color: #0d4f70; border: 1px solid #8ecae6; }
-  .income-spain { background: #f3e8ff; color: #5a1a8a; border: 1px solid #d4a8f0; }
-  .income-label { font-size: 0.55rem; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.5; margin-top: 0.3rem; }
-
-  .income-both { display: none; font-size: 0.62rem; margin-top: 0.35rem; color: var(--slate); }
-  .income-both .plus { color: var(--sage); font-weight: 600; }
-  body.both-working .income-both { display: block; }
-
-  /* Cards only visible in both-working mode */
-  .both-only { display: none !important; }
-  body.both-working .both-only { display: flex !important; }
-
-  /* Transfer badge label */
-  .transfer-flag {
-    display: inline-block; margin-bottom: 0.4rem;
-    font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase;
-    padding: 0.15rem 0.5rem; border-radius: 20px;
-    background: var(--gold-bg); color: #7a5010; border: 1px solid var(--gold);
+    padding: 24px 16px;
+    -webkit-font-smoothing: antialiased;
   }
 
-  .pc-panel { display: none; text-align: left; margin-top: 0.7rem; padding-top: 0.65rem; border-top: 1px solid rgba(0,0,0,0.08); font-size: 0.63rem; line-height: 1.85; }
-  .pc-panel.open { display: block; }
-  .pc-panel .pro::before { content: '＋ '; color: var(--sage); font-weight: 600; }
-  .pc-panel .con::before { content: '－ '; color: var(--terra); font-weight: 600; }
+  .container { max-width: 800px; margin: 0 auto; }
 
-  .dest-blocked { border-radius: 6px; padding: 0.85rem 1rem; background: #f4f4f4; border: 2px dashed #ccc; text-align: center; opacity: 0.5; width: 100%; }
-  .dest-blocked .dest-name { color: #999; font-family: 'Playfair Display', serif; font-size: 0.85rem; }
-  .dest-blocked .block-note { font-size: 0.6rem; color: #aaa; margin-top: 0.3rem; line-height: 1.5; }
+  h1 {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-bright);
+    line-height: 1.2;
+  }
 
-  .col { display: flex; flex-direction: column; align-items: center; }
-  .row { display: flex; align-items: flex-start; justify-content: center; }
-  .arrow-down { width: 2px; flex-shrink: 0; position: relative; margin: 0 auto; }
-  .arrow-down::after { content: ''; position: absolute; bottom: -7px; left: 50%; transform: translateX(-50%); border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 8px solid currentColor; }
-  .fork { display: flex; align-items: center; width: 100%; }
-  .fork-line { height: 2px; flex: 1; }
-  .fork-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ink); flex-shrink: 0; }
-  .pill { font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 0.15rem 0.55rem; border-radius: 20px; white-space: nowrap; }
-  .pill-yes  { background: var(--sage-bg); color: var(--sage); border: 1px solid var(--sage); }
-  .pill-no   { background: var(--terra-bg); color: var(--terra); border: 1px solid var(--terra); }
-  .pill-mid  { background: var(--slate-bg); color: var(--slate); border: 1px solid #aab; }
-  .pill-gold { background: var(--gold-bg); color: #8a6010; border: 1px solid var(--gold); }
-  .gap-xs { height: 0.5rem; } .gap-sm { height: 1rem; } .gap-md { height: 1.5rem; } .gap-lg { height: 2rem; }
-  .opt { font-size: 0.65rem; padding: 0.55rem 0.65rem; text-align: center; border-radius: 4px; border: 1.5px solid #ccc; background: white; width: 100%; }
-  .opt-title { font-family: 'Playfair Display', serif; font-size: 0.72rem; margin-bottom: 0.15rem; }
-  .opt-sub { font-size: 0.6rem; opacity: 0.6; }
-  .opt-ext { border-color: var(--purple); background: var(--purple-bg); }
-  .opt-ext .opt-title { color: var(--purple); }
+  .subtitle {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dimmer);
+    margin-top: 8px;
+    letter-spacing: 0.5px;
+  }
 
-  .bar-row { display: flex; align-items: center; gap: 0.75rem; }
-  .bar-label { width: 210px; font-size: 0.61rem; text-align: right; flex-shrink: 0; color: var(--slate); line-height: 1.4; }
-  .bar-track { flex: 1; background: #e8e2d6; border-radius: 3px; height: 24px; position: relative; overflow: visible; }
-  .bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
-  .bar-fill-both { height: 100%; border-radius: 3px; position: absolute; top: 0; opacity: 0.4; transition: width 0.4s ease, left 0.4s ease; display: none; }
-  body.both-working .bar-fill-both { display: block; }
-  /* Transfer-only bar rows hidden until both-working */
-  .bar-row.both-only-bar { display: none; }
-  body.both-working .bar-row.both-only-bar { display: flex; }
-  .bar-value { position: absolute; top: 50%; transform: translateY(-50%); font-size: 0.64rem; font-weight: 500; white-space: nowrap; transition: all 0.3s; }
-  .bar-tag { font-size: 0.52rem; opacity: 0.6; margin-left: 0.2rem; }
+  .city-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 28px 0;
+  }
 
-  @media (max-width: 700px) {
-    .two-tracks { flex-direction: column !important; align-items: center !important; }
-    .two-tracks > div { width: 100% !important; max-width: 400px !important; }
-    .dest-row { grid-template-columns: 1fr 1fr !important; }
-    .bar-label { width: 130px; font-size: 0.56rem; }
+  .city-tab {
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(255,255,255,0.04);
+    color: #666;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 400;
+    font-family: 'Source Serif 4', Georgia, serif;
+    transition: all 0.25s ease;
+    letter-spacing: 0.3px;
+  }
+
+  .city-tab:hover { background: rgba(255,255,255,0.07); }
+
+  .city-tab.active {
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .city-header {
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 24px;
+    border-left: 4px solid var(--city-color);
+    transition: all 0.3s ease;
+  }
+
+  .city-title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
+  .city-title-row .flag { font-size: 32px; }
+
+  .city-title-row h2 {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-bright);
+  }
+
+  .city-title-row .country {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dimmer);
+  }
+
+  .best-for {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 15px;
+    font-style: italic;
+    color: var(--city-accent);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  .ratings-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  @media (max-width: 500px) {
+    .ratings-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .rating-item label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .dots { display: flex; gap: 3px; align-items: center; }
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    transition: background 0.3s ease;
+  }
+  .dot.filled { background: var(--city-accent); }
+
+  .pace-row {
+    margin-top: 12px;
+  }
+  .pace-row label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .pace-row .value {
+    font-size: 13px;
+    color: #aaa;
+    margin-top: 2px;
+  }
+
+  .section-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+
+  .section-tab {
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid transparent;
+    background: rgba(255,255,255,0.03);
+    color: var(--text-dimmer);
+    cursor: pointer;
+    font-size: 12px;
+    font-family: 'Space Mono', monospace;
+    transition: all 0.2s ease;
+  }
+
+  .section-tab:hover { background: rgba(255,255,255,0.06); }
+
+  .section-tab.active {
+    color: var(--city-accent);
+  }
+
+  .content-block {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 24px;
+    line-height: 1.8;
+  }
+
+  .content-block p {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 16px;
+    color: #c8c4ba;
+  }
+
+  .honest-block {
+    background: rgba(255,100,100,0.04);
+    border-radius: 12px;
+    padding: 20px;
+    border-left: 3px solid rgba(255,100,100,0.3);
+    margin-bottom: 32px;
+  }
+
+  .honest-block .label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: #c55;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .honest-block p {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 14px;
+    color: #a89;
+    line-height: 1.7;
+  }
+
+  .all-cities {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  .all-cities h3 {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dimmer);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+
+  .city-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(255,255,255,0.02);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+    width: 100%;
+    margin-bottom: 8px;
+  }
+
+  .city-row:hover { background: rgba(255,255,255,0.05); }
+
+  .city-row .flag { font-size: 18px; flex-shrink: 0; }
+
+  .city-row .info { flex: 1; min-width: 0; }
+
+  .city-row .name {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #999;
+  }
+
+  .city-row .pace-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dimmer);
+    margin-top: 2px;
+  }
+
+  .city-row .summary {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 11px;
+    font-style: italic;
+    color: var(--text-dim);
+    text-align: right;
+    max-width: 300px;
+  }
+
+  @media (max-width: 600px) {
+    .city-row .summary { display: none; }
+  }
+
+  .fade-in {
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>D & M — <em>The Next Chapter</em></h1>
-  <p>A decision map for the road ahead</p>
-</header>
-
-<div class="legend">
-  <div class="legend-item"><div class="legend-swatch" style="background:var(--gold);"></div>Visa Gate</div>
-  <div class="legend-item"><div class="legend-swatch" style="background:var(--sage);"></div>Resolved / Promoted</div>
-  <div class="legend-item"><div class="legend-swatch" style="background:var(--terra);"></div>Blocked / Not Promoted</div>
-  <div class="legend-item"><div class="legend-swatch" style="background:var(--kc-color);"></div>Kansas City</div>
-  <div class="legend-item"><div class="legend-swatch" style="background:var(--spain-color);"></div>Spain (BCN or MAD)</div>
-  <div class="legend-item"><div class="legend-swatch" style="background:var(--ams-color);"></div>Amsterdam</div>
-</div>
-
-<!-- GLOBAL TOGGLE -->
-<div class="global-toggle">
-  <span class="toggle-label active" id="lbl-d">D only</span>
-  <label class="toggle-switch">
-    <input type="checkbox" id="bothToggle" onchange="setBothWorking(this.checked)">
-    <div class="toggle-track"></div>
-    <div class="toggle-thumb"></div>
-  </label>
-  <span class="toggle-label" id="lbl-both">Both working</span>
-</div>
-
-<div class="chart">
-<div class="col">
-
-  <!-- START -->
-  <div class="node n-start" style="max-width:420px; border-radius:8px;">
-    <div class="node-label">Where we are now</div>
-    <div class="node-title">D & M at an Inflection Point</div>
-    <div class="node-sub">Two parallel tracks — visa status & career path — must be evaluated together</div>
-  </div>
-  <div class="gap-md"></div>
-
-  <div class="fork" style="width:65%; max-width:600px;">
-    <div class="fork-line" style="background:var(--gold);"></div>
-    <div class="fork-dot"></div>
-    <div class="fork-line" style="background:var(--ink);"></div>
-  </div>
-  <div class="gap-xs"></div>
-
-  <!-- TWO TRACKS -->
-  <div class="row two-tracks" style="width:100%; gap:2rem; align-items:flex-start;">
-
-    <!-- TRACK 1: VISA -->
-    <div class="col" style="flex:1; max-width:450px;">
-      <span class="pill pill-gold" style="margin-bottom:0.6rem;">Track 1 — M's Visa Status</span>
-      <div class="arrow-down" style="height:18px; color:var(--gold); background:var(--gold);"></div>
-      <div class="gap-xs"></div>
-      <div class="node n-gate">
-        <div class="node-label">Foundational Gate — gates all USA paths</div>
-        <div class="node-title">Is M's US Visa situation resolved?</div>
-        <div class="node-sub">Guatemala visa freeze currently in effect</div>
-      </div>
-      <div class="gap-sm"></div>
-      <div class="fork" style="width:80%;"><div class="fork-line" style="background:var(--sage);"></div><div class="fork-dot"></div><div class="fork-line" style="background:var(--terra);"></div></div>
-      <div class="gap-xs"></div>
-      <div class="row" style="width:80%; justify-content:space-between;"><span class="pill pill-yes">Resolved</span><span class="pill pill-no">Not Resolved</span></div>
-      <div class="gap-xs"></div>
-      <div class="row" style="width:100%; gap:0.75rem; align-items:flex-start;">
-        <div class="col" style="flex:1;">
-          <div class="arrow-down" style="height:16px; color:var(--sage); background:var(--sage);"></div>
-          <div class="gap-xs"></div>
-          <div class="node n-action" style="border-color:var(--sage); text-align:center; padding:0.65rem;"><div class="node-label" style="color:var(--sage); opacity:1;">Two resolution paths</div></div>
-          <div class="gap-xs"></div>
-          <div class="fork" style="width:80%;"><div class="fork-line" style="background:#bbb;"></div><div class="fork-dot" style="background:var(--sage); width:8px; height:8px;"></div><div class="fork-line" style="background:#bbb;"></div></div>
-          <div class="gap-xs"></div>
-          <div class="row" style="gap:0.5rem; width:100%;">
-            <div class="node n-action" style="flex:1; padding:0.6rem; text-align:center; border-color:#ccc;"><div style="font-family:'Playfair Display',serif; font-size:0.75rem; margin-bottom:0.2rem;">A) Freeze Lifts</div><div style="font-size:0.6rem; opacity:0.6;">Guatemalan visa resumes normally</div></div>
-            <div class="node n-action" style="flex:1; padding:0.6rem; text-align:center; border-color:var(--gold); background:var(--gold-bg);"><div style="font-family:'Playfair Display',serif; font-size:0.75rem; margin-bottom:0.2rem; color:#7a5a10;">B) Spanish → US Visa</div><div style="font-size:0.6rem; opacity:0.7;">Use EU citizenship to obtain US visa</div></div>
-          </div>
-          <div class="gap-xs"></div>
-          <div class="arrow-down" style="height:16px; color:var(--sage); background:var(--sage);"></div>
-          <div class="gap-xs"></div>
-          <div class="node" style="background:var(--sage-bg); border:2px solid var(--sage); text-align:center; padding:0.65rem; border-radius:5px;"><div class="node-title" style="font-size:0.82rem; color:#2e5c38;">✓ USA remains on the table</div><div class="node-sub">Kansas City is a viable destination</div></div>
-        </div>
-        <div class="col" style="flex:1;">
-          <div class="arrow-down" style="height:16px; color:var(--terra); background:var(--terra);"></div>
-          <div class="gap-xs"></div>
-          <div class="node n-action" style="border-color:var(--terra); background:var(--terra-bg); text-align:center; padding:0.65rem;"><div class="node-title" style="font-size:0.78rem; color:#7a2e10;">Freeze persists &amp; no alternate US visa path</div></div>
-          <div class="gap-xs"></div>
-          <div class="arrow-down" style="height:16px; color:var(--terra); background:var(--terra);"></div>
-          <div class="gap-xs"></div>
-          <div class="node" style="background:#f4f4f4; border:2px dashed #bbb; text-align:center; padding:0.65rem; border-radius:5px;"><div class="node-title" style="font-size:0.82rem; color:#999;">✗ Kansas City removed</div><div class="node-sub" style="color:#aaa;">EU move becomes necessary, not just an option</div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TRACK 2: CAREER -->
-    <div class="col" style="flex:1; max-width:450px;">
-      <span class="pill pill-mid" style="margin-bottom:0.6rem;">Track 2 — D's Career Path</span>
-      <div class="arrow-down" style="height:18px; color:var(--ink); background:var(--ink);"></div>
-      <div class="gap-xs"></div>
-      <div class="node n-decision"><div class="node-label">First, wait on</div><div class="node-title">D's Promotion Outcome at Zendesk</div></div>
-      <div class="gap-sm"></div>
-      <div class="fork" style="width:80%;"><div class="fork-line" style="background:var(--sage);"></div><div class="fork-dot"></div><div class="fork-line" style="background:var(--terra);"></div></div>
-      <div class="gap-xs"></div>
-      <div class="row" style="width:80%; justify-content:space-between;"><span class="pill pill-yes">Promoted</span><span class="pill pill-no">Not Promoted</span></div>
-      <div class="gap-xs"></div>
-      <div class="row" style="width:100%; gap:0.75rem; align-items:flex-start;">
-        <div class="col" style="flex:1;">
-          <div class="arrow-down" style="height:16px; color:var(--sage); background:var(--sage);"></div>
-          <div class="gap-xs"></div>
-          <div class="node n-promo" style="padding:0.65rem;"><div class="node-label" style="color:var(--sage); opacity:1;">Path A</div><div class="node-title" style="font-size:0.85rem;">D Gets Promoted</div><div class="node-sub">New leverage — stay or go?</div></div>
-          <div class="gap-xs"></div>
-          <div class="fork" style="width:90%;"><div class="fork-line" style="background:#bbb;"></div><div class="fork-dot" style="background:var(--sage); width:8px; height:8px;"></div><div class="fork-line" style="background:#bbb;"></div></div>
-          <div class="gap-xs"></div>
-          <div style="display:flex; flex-direction:column; gap:0.4rem; width:100%;">
-            <div class="opt"><div class="opt-title">Stay Zendesk — KC</div><div class="opt-sub">Promotion secured, remain in place</div></div>
-            <div class="opt"><div class="opt-title">Zendesk Internal Transfer — Spain</div><div class="opt-sub">BCN or MAD, with promotion</div></div>
-            <div class="opt"><div class="opt-title">Zendesk Internal Transfer — Amsterdam</div><div class="opt-sub">AMS office, with promotion</div></div>
-            <div class="opt opt-ext"><div class="opt-title">External Staff+ PM — Spain</div><div class="opt-sub">BCN or MAD · Staff+ only</div></div>
-            <div class="opt opt-ext"><div class="opt-title">External Senior or Staff+ PM — Amsterdam</div><div class="opt-sub">AMS · both levels available</div></div>
-          </div>
-        </div>
-        <div class="col" style="flex:1;">
-          <div class="arrow-down" style="height:16px; color:var(--terra); background:var(--terra);"></div>
-          <div class="gap-xs"></div>
-          <div class="node n-nopromo" style="padding:0.65rem;"><div class="node-label" style="color:var(--terra); opacity:1;">Path B</div><div class="node-title" style="font-size:0.85rem;">D Not Promoted</div><div class="node-sub">Same role continues</div></div>
-          <div class="gap-xs"></div>
-          <div class="fork" style="width:90%;"><div class="fork-line" style="background:#bbb;"></div><div class="fork-dot" style="background:var(--terra); width:8px; height:8px;"></div><div class="fork-line" style="background:#bbb;"></div></div>
-          <div class="gap-xs"></div>
-          <div style="display:flex; flex-direction:column; gap:0.4rem; width:100%;">
-            <div class="opt"><div class="opt-title">Stay Same Job — KC</div><div class="opt-sub">Same role, same location</div></div>
-            <div class="dest-blocked"><div class="dest-name">✗ Zendesk Transfer — Spain</div><div class="block-note">Not available without promotion</div></div>
-            <div class="opt"><div class="opt-title">Zendesk Internal Transfer — Amsterdam</div><div class="opt-sub">AMS office, same level</div></div>
-            <div class="opt opt-ext"><div class="opt-title">External Staff+ PM — Spain</div><div class="opt-sub">BCN or MAD · Staff+ only</div></div>
-            <div class="opt opt-ext"><div class="opt-title">External Senior or Staff+ PM — Amsterdam</div><div class="opt-sub">AMS · both levels available</div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
+<div class="container">
+  <div style="margin-bottom: 32px;">
+    <h1>What's life actually like?</h1>
+    <div class="subtitle">8 European cities · for a couple in their 40s · no spreadsheets</div>
   </div>
 
-  <!-- CONVERGENCE -->
-  <div class="gap-lg"></div>
-  <div style="font-size:0.6rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--slate); opacity:0.65; text-align:center;">Both tracks converge → destination outcomes</div>
-  <div class="gap-sm"></div>
-  <div class="arrow-down" style="height:26px; color:var(--ink); background:var(--ink);"></div>
-  <div class="gap-sm"></div>
-  <div class="node n-decision" style="max-width:460px;"><div class="node-label">Final outcome</div><div class="node-title">Where do D & M land?</div><div class="node-sub">Visa track gates KC &nbsp;·&nbsp; Career track shapes which role gets you there</div></div>
-  <div class="gap-sm"></div>
-  <div class="arrow-down" style="height:26px; color:var(--ink); background:var(--ink);"></div>
-  <div class="gap-sm"></div>
+  <div class="city-tabs" id="cityTabs"></div>
 
-  <!-- DESTINATION CARDS -->
-  <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; width:100%; max-width:900px;" class="dest-row">
+  <div id="cityHeader" class="city-header"></div>
 
-    <!-- ── KANSAS CITY ── -->
-    <div class="col" style="gap:0.75rem;">
-      <div class="dest dest-kc" onclick="togglePC(this)">
-        <div class="corner-tag" style="color:var(--sage);">Promoted · Zendesk</div>
-        <div class="dest-flag">🏙️</div>
-        <div class="dest-name">Kansas City</div>
-        <div class="dest-sub-label" style="color:var(--kc-color);">Visa gate required</div>
-        <div class="income-wrap">
-          <div class="income-badge income-kc" data-base="4775" data-add="4072">€4,775 / mo</div>
-          <div class="income-both"><span class="plus">＋ €4,072</span> M working = <strong>€8,847 / mo</strong></div>
-        </div>
-        <div class="income-label">household disposable · Zendesk</div>
-        <div class="dest-hint">click for pros &amp; cons</div>
-        <div class="pc-panel">
-          <div class="pro">Highest D-only income of all scenarios</div>
-          <div class="pro">Both working: €8,847 — strongest combined total</div>
-          <div class="pro">Promotion secured — strong career momentum</div>
-          <div class="pro">Established community &amp; network</div>
-          <div class="con">Only viable if visa resolved</div>
-          <div class="con">M's long-term US status uncertain</div>
-          <div class="con">Removed entirely if freeze persists</div>
-        </div>
-      </div>
-      <div class="dest dest-kc" onclick="togglePC(this)" style="opacity:0.88;">
-        <div class="corner-tag" style="color:var(--terra);">No Promotion · Zendesk</div>
-        <div class="dest-flag">🏙️</div>
-        <div class="dest-name">Kansas City</div>
-        <div class="dest-sub-label" style="color:var(--kc-color);">Visa gate required</div>
-        <div class="income-wrap">
-          <div class="income-badge income-kc" data-base="4022" data-add="4072">€4,022 / mo</div>
-          <div class="income-both"><span class="plus">＋ €4,072</span> M working = <strong>€8,094 / mo</strong></div>
-        </div>
-        <div class="income-label">household disposable · Zendesk</div>
-        <div class="dest-hint">click for pros &amp; cons</div>
-        <div class="pc-panel">
-          <div class="pro">Strong income vs. all EU options</div>
-          <div class="pro">Both working: €8,094 — second highest combined</div>
-          <div class="pro">Low disruption, familiar environment</div>
-          <div class="con">No career progression achieved</div>
-          <div class="con">Requires visa resolution to remain viable</div>
-          <div class="con">Risk of stagnation without clear next step</div>
-        </div>
-      </div>
-    </div>
+  <div class="section-tabs" id="sectionTabs"></div>
 
-    <!-- ── SPAIN ── -->
-    <div class="col" style="gap:0.75rem;">
+  <div class="content-block" id="contentBlock"></div>
 
-      <!-- Spain · Zendesk Promoted -->
-      <div class="dest dest-spain" onclick="togglePC(this)">
-        <div class="corner-tag" style="color:var(--sage);">Promoted · Zendesk</div>
-        <div class="dest-flag">🇪🇸</div>
-        <div class="dest-name">Spain</div>
-        <div class="dest-sub-label" style="color:var(--spain-color);">Barcelona or Madrid · Always viable</div>
-        <div class="income-wrap">
-          <div class="income-badge income-spain" data-base="1656" data-add="4108">€1,656 / mo</div>
-          <div class="income-both"><span class="plus">＋ €4,108</span> M working = <strong>€5,764 / mo</strong></div>
-        </div>
-        <div class="income-label">household disposable · Zendesk</div>
-        <div class="dest-hint">click for pros &amp; cons</div>
-        <div class="pc-panel">
-          <div class="pro">M's EU rights fully active</div>
-          <div class="pro">M's culture, language &amp; family proximity</div>
-          <div class="pro">Both working transforms the picture: €5,764/mo</div>
-          <div class="pro">Permanently resolves visa risk</div>
-          <div class="con">Lowest D-only income of all scenarios</div>
-          <div class="con">D-only: €3,119/mo less than KC promoted</div>
-          <div class="con">Language barrier for D initially</div>
-        </div>
-      </div>
+  <div class="honest-block" id="honestBlock"></div>
 
-      <!-- Spain · Zendesk Promoted + M Transfer (both-working only) -->
-      <div class="both-only" style="width:100%; flex-direction:column; gap:0;">
-        <div style="font-size:0.6rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); opacity:0.8; margin-bottom:0.4rem; text-align:center;">↓ if M's company transfers her to Spain</div>
-        <div class="dest dest-spain-transfer" onclick="togglePC(this)" style="width:100%;">
-          <div class="corner-tag" style="color:var(--sage);">Promoted · Zendesk</div>
-          <div class="dest-flag">🇪🇸</div>
-          <div class="dest-name">Spain</div>
-          <div class="dest-sub-label" style="color:var(--spain-color);">Barcelona or Madrid</div>
-          <div class="transfer-flag">M's company transfer</div>
-          <div class="income-wrap">
-            <div class="income-badge income-spain">€4,184 / mo</div>
-            <div class="income-both"><span class="plus">＋ €2,528</span> M company transfer = <strong>€4,184 / mo</strong></div>
-          </div>
-          <div class="income-label">household disposable · both working</div>
-          <div class="dest-hint">click for pros &amp; cons</div>
-          <div class="pc-panel">
-            <div class="pro">M keeps her current employer — no job search risk</div>
-            <div class="pro">Company-sponsored relocation support likely</div>
-            <div class="pro">Permanently resolves visa risk</div>
-            <div class="con">€1,580/mo less than M finding independent work in Spain</div>
-            <div class="con">M's role/package may change under transfer terms</div>
-            <div class="con">Language barrier for D initially</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Spain · External Staff+ -->
-      <div class="dest dest-spain" onclick="togglePC(this)" style="opacity:0.88;">
-        <div class="corner-tag" style="color:var(--purple);">External · Staff+</div>
-        <div class="dest-flag">🇪🇸</div>
-        <div class="dest-name">Spain</div>
-        <div class="dest-sub-label" style="color:var(--spain-color);">Barcelona or Madrid · Always viable</div>
-        <div class="income-wrap">
-          <div class="income-badge income-spain" data-base="2555" data-add="4108">€2,555 / mo</div>
-          <div class="income-both"><span class="plus">＋ €4,108</span> M working = <strong>€6,663 / mo</strong></div>
-        </div>
-        <div class="income-label">household disposable · external Staff+</div>
-        <div class="dest-hint">click for pros &amp; cons</div>
-        <div class="pc-panel">
-          <div class="pro">€899/mo more than Zendesk Spain internal (D only)</div>
-          <div class="pro">Both working: €6,663/mo — solid combined total</div>
-          <div class="pro">Breaks Zendesk ceiling — Staff+ title</div>
-          <div class="pro">Available in Path A or Path B</div>
-          <div class="pro">Permanently resolves visa risk</div>
-          <div class="con">Staff+ only — no Senior external path in Spain</div>
-          <div class="con">D-only: €2,220/mo less than KC promoted</div>
-          <div class="con">New company risk</div>
-        </div>
-      </div>
-
-      <!-- Spain · External Staff+ + M Transfer (both-working only) -->
-      <div class="both-only" style="width:100%; flex-direction:column; gap:0;">
-        <div style="font-size:0.6rem; letter-spacing:0.12em; text-transform:uppercase; color:var(--gold); opacity:0.8; margin-bottom:0.4rem; text-align:center;">↓ if M's company transfers her to Spain</div>
-        <div class="dest dest-spain-transfer" onclick="togglePC(this)" style="width:100%; opacity:0.88;">
-          <div class="corner-tag" style="color:var(--purple);">External · Staff+</div>
-          <div class="dest-flag">🇪🇸</div>
-          <div class="dest-name">Spain</div>
-          <div class="dest-sub-label" style="color:var(--spain-color);">Barcelona or Madrid</div>
-          <div class="transfer-flag">M's company transfer</div>
-          <div class="income-wrap">
-            <div class="income-badge income-spain">€5,083 / mo</div>
-            <div class="income-both"><span class="plus">＋ €2,528</span> M company transfer = <strong>€5,083 / mo</strong></div>
-          </div>
-          <div class="income-label">household disposable · both working</div>
-          <div class="dest-hint">click for pros &amp; cons</div>
-          <div class="pc-panel">
-            <div class="pro">M keeps her current employer — no job search risk</div>
-            <div class="pro">D gets Staff+ title at new company</div>
-            <div class="pro">Company-sponsored relocation support likely</div>
-            <div class="pro">Permanently resolves visa risk</div>
-            <div class="pro">Available in Path A or Path B</div>
-            <div class="con">€1,580/mo less than M finding independent work in Spain</div>
-            <div class="con">M's role/package may change under transfer terms</div>
-            <div class="con">Language barrier for D initially</div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- ── AMSTERDAM ── -->
-    <div class="col" style="gap:0.75rem;">
-      <div class="dest dest-ams" onclick="togglePC(this)">
-        <div class="corner-tag" style="color:var(--sage);">Promoted · Zendesk</div>
-        <div class="dest-flag">🇳🇱</div>
-        <div class="dest-name">Amsterdam</div>
-        <div class="dest-sub-label" style="color:var(--ams-color);">Always viable</div>
-        <div class="income-wrap">
-          <div class="income-badge income-ams" data-base="2823" data-add="4635">€2,823 / mo</div>
-          <div class="income-both"><span class="plus">＋ €4,635</span> M working = <strong>€7,458 / mo</strong></div>
-        </div>
-        <div class="income-label">household disposable · Zendesk</div>
-        <div class="dest-hint">click for pros &amp; cons</div>
-        <div class="pc-panel">
-          <div class="pro">Best Zendesk EU disposable income</div>
-          <div class="pro">Both working: €7,458 — strongest EU combined</div>
-          <div class="pro">English-first environment</div>
-          <div class="pro">EU residency for M via Spanish citizenship</div>
-          <div class="pro">Permanently resolves visa risk</div>
-          <div class="con">Very high cost of living</div>
-          <div class="con">Colder climate</div>
-          <div class="con">Further from M's family &amp; culture</div>
-        </div>
-      </div>
-      <div class="dest dest-ams" onclick="togglePC(this)" style="opacity:0.88;">
-        <div class="corner-tag" style="color:var(--terra);">No Promo · Zendesk</div>
-        <div class="dest-flag">🇳🇱</div>
-        <div class="dest-name">Amsterdam</div>
-        <div class="dest-sub-label" style="color:var(--ams-color);">Always viable</div>
-        <div class="income-wrap">
-          <div class="income-badge income-ams" data-base="2534" data-add="4635">€2,534 / mo</div>
-          <div class="income-both"><span class="plus">＋ €4,635</span> M working = <strong>€7,169 / mo</strong></div>
-        </div>
-        <div class="income-label">household disposable · Zendesk</div>
-        <div class="dest-hint">click for pros &amp; cons</div>
-        <div class="pc-panel">
-          <div class="pro">EU move available regardless of promotion</div>
-          <div class="pro">Both working: €7,169/mo</div>
-          <div class="pro">English-first environment</div>
-          <div class="pro">EU residency for M · Permanently resolves visa risk</div>
-          <div class="con">No career progression in move</div>
-          <div class="con">Very high cost of living</div>
-          <div class="con">Further from M's family &amp; culture</div>
-        </div>
-      </div>
-      <div class="dest dest-ams" onclick="togglePC(this)" style="opacity:0.88;">
-        <div class="corner-tag" style="color:var(--purple);">External · Senior</div>
-        <div class="dest-flag">🇳🇱</div>
-        <div class="dest-name">Amsterdam</div>
-        <div class="dest-sub-label" style="color:var(--ams-color);">Always viable</div>
-        <div class="income-wrap">
-          <div class="income-badge income-ams" data-base="2534" data-add="4635">€2,534 / mo</div>
-          <div class="income-both"><span class="plus">＋ €4,635</span> M working = <strong>€7,169 / mo</strong></div>
-        </div>
-        <div class="income-label">household disposable · external Senior</div>
-        <div class="dest-hint">click for pros &amp; cons</div>
-        <div class="pc-panel">
-          <div class="pro">Breaks Zendesk ceiling — new employer</div>
-          <div class="pro">Available in Path A or Path B</div>
-          <div class="pro">EU residency for M · Permanently resolves visa risk</div>
-          <div class="con">Same income as internal no-promo AMS</div>
-          <div class="con">Senior title — lower ceiling than Staff+</div>
-          <div class="con">New company risk · Very high cost of living</div>
-        </div>
-      </div>
-      <div class="dest dest-ams" onclick="togglePC(this)" style="opacity:0.88;">
-        <div class="corner-tag" style="color:var(--purple);">External · Staff+</div>
-        <div class="dest-flag">🇳🇱</div>
-        <div class="dest-name">Amsterdam</div>
-        <div class="dest-sub-label" style="color:var(--ams-color);">Always viable</div>
-        <div class="income-wrap">
-          <div class="income-badge income-ams" data-base="2823" data-add="4635">€2,823 / mo</div>
-          <div class="income-both"><span class="plus">＋ €4,635</span> M working = <strong>€7,458 / mo</strong></div>
-        </div>
-        <div class="income-label">household disposable · external Staff+</div>
-        <div class="dest-hint">click for pros &amp; cons</div>
-        <div class="pc-panel">
-          <div class="pro">Highest EU disposable income (D only)</div>
-          <div class="pro">Both working: €7,458 — strongest EU combined</div>
-          <div class="pro">Staff+ title — best career position in EU</div>
-          <div class="pro">Available in Path A or Path B</div>
-          <div class="pro">EU residency for M · Permanently resolves visa risk</div>
-          <div class="con">Very high cost of living</div>
-          <div class="con">New company risk</div>
-          <div class="con">Further from M's family &amp; culture</div>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- end dest grid -->
-
-  <!-- BAR CHART -->
-  <div style="margin-top:2.5rem; max-width:740px; width:100%;">
-    <div style="font-size:0.6rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--slate); opacity:0.65; text-align:center; margin-bottom:1rem;">
-      Household disposable income comparison (€ / month)
-    </div>
-    <div style="display:flex; flex-direction:column; gap:0.6rem;" id="barChart">
-
-      <div class="bar-row" data-base="4775" data-both="8847">
-        <div class="bar-label">KC · Promoted</div>
-        <div class="bar-track">
-          <div class="bar-fill" style="background:var(--kc-color); opacity:0.8; width:100%;"></div>
-          <div class="bar-fill-both" style="background:var(--kc-color);"></div>
-          <span class="bar-value" style="right:0.5rem; color:white;">€4,775 <span class="bar-tag">Zendesk</span></span>
-        </div>
-      </div>
-      <div class="bar-row" data-base="4022" data-both="8094">
-        <div class="bar-label">KC · No Promotion</div>
-        <div class="bar-track">
-          <div class="bar-fill" style="background:var(--kc-color); opacity:0.55; width:84.2%;"></div>
-          <div class="bar-fill-both" style="background:var(--kc-color);"></div>
-          <span class="bar-value" style="left:calc(84.2% + 0.4rem); color:var(--ink);">€4,022 <span class="bar-tag">Zendesk</span></span>
-        </div>
-      </div>
-      <div class="bar-row" data-base="2823" data-both="7458">
-        <div class="bar-label">AMS · Promoted / Ext Staff+</div>
-        <div class="bar-track">
-          <div class="bar-fill" style="background:var(--ams-color); opacity:0.8; width:59.1%;"></div>
-          <div class="bar-fill-both" style="background:var(--ams-color);"></div>
-          <span class="bar-value" style="left:calc(59.1% + 0.4rem); color:var(--ink);">€2,823 <span class="bar-tag">Zendesk / Ext Staff+</span></span>
-        </div>
-      </div>
-      <div class="bar-row" data-base="2555" data-both="6663">
-        <div class="bar-label">Spain · Ext Staff+</div>
-        <div class="bar-track">
-          <div class="bar-fill" style="background:var(--spain-color); opacity:0.7; width:53.5%;"></div>
-          <div class="bar-fill-both" style="background:var(--spain-color);"></div>
-          <span class="bar-value" style="left:calc(53.5% + 0.4rem); color:var(--ink);">€2,555 <span class="bar-tag">BCN or MAD</span></span>
-        </div>
-      </div>
-      <div class="bar-row" data-base="2534" data-both="7169">
-        <div class="bar-label">AMS · No Promo / Ext Senior</div>
-        <div class="bar-track">
-          <div class="bar-fill" style="background:var(--ams-color); opacity:0.55; width:53.1%;"></div>
-          <div class="bar-fill-both" style="background:var(--ams-color);"></div>
-          <span class="bar-value" style="left:calc(53.1% + 0.4rem); color:var(--ink);">€2,534 <span class="bar-tag">Zendesk / Ext Senior</span></span>
-        </div>
-      </div>
-      <div class="bar-row" data-base="1656" data-both="5764">
-        <div class="bar-label">Spain · Zendesk (Promoted)</div>
-        <div class="bar-track">
-          <div class="bar-fill" style="background:var(--spain-color); opacity:0.55; width:34.7%;"></div>
-          <div class="bar-fill-both" style="background:var(--spain-color);"></div>
-          <span class="bar-value" style="left:calc(34.7% + 0.4rem); color:var(--ink);">€1,656 <span class="bar-tag">Zendesk</span></span>
-        </div>
-      </div>
-      <!-- M Transfer rows — both-working only -->
-      <div class="bar-row both-only-bar" data-base="5083" data-both="5083">
-        <div class="bar-label">Spain Ext Staff+ · M co. transfer</div>
-        <div class="bar-track">
-          <div class="bar-fill" style="background:var(--spain-color); opacity:0.5; width:57.5%;"></div>
-          <div class="bar-fill-both" style="background:var(--spain-color);"></div>
-          <span class="bar-value" style="left:calc(57.5% + 0.4rem); color:var(--ink);">€5,083 <span class="bar-tag">M co. transfer</span></span>
-        </div>
-      </div>
-      <div class="bar-row both-only-bar" data-base="4184" data-both="4184">
-        <div class="bar-label">Spain Zendesk · M co. transfer</div>
-        <div class="bar-track">
-          <div class="bar-fill" style="background:var(--spain-color); opacity:0.4; width:47.3%;"></div>
-          <div class="bar-fill-both" style="background:var(--spain-color);"></div>
-          <span class="bar-value" style="left:calc(47.3% + 0.4rem); color:var(--ink);">€4,184 <span class="bar-tag">M co. transfer</span></span>
-        </div>
-      </div>
-
-    </div>
-    <div style="font-size:0.55rem; color:var(--slate); opacity:0.5; text-align:center; margin-top:0.75rem;" id="chartNote">
-      D working only · All figures household / month / euros
-    </div>
+  <div class="all-cities">
+    <h3>All cities at a glance</h3>
+    <div id="allCities"></div>
   </div>
-
-</div>
 </div>
 
 <script>
-  function togglePC(el) {
-    const panel = el.querySelector('.pc-panel');
-    if (panel) panel.classList.toggle('open');
+const cities = [
+  {
+    name: "Madrid", country: "Spain", flag: "🇪🇸",
+    color: "#C4122E", accent: "#ff6b6b",
+    foodDrink: 5, walkability: 5, weather: 5, socialWarmth: 5, languageBarrier: 3, culturalDepth: 5,
+    pace: "Slow, late, social",
+    bestFor: "Food-obsessed couples who want sunshine and deep cultural immersion",
+    honest: "Bureaucracy will test your patience. Summers are brutally hot (35°C+). Tech salaries are lower than Northern Europe. The 'mañana' attitude is charming until you need something done by a deadline.",
+    sections: {
+      daily: "Your day starts around 9. Coffee at the corner bar — a cortado and maybe a tostada con tomate for €3. You walk to your home office through streets that are already buzzing. Lunch is the main event: a proper sit-down at 2pm, maybe a menú del día for €12–15 with wine included. Nobody rushes. The afternoon stretches. Dinner doesn't start until 9:30 or 10, and it's totally normal to be out at a terraza on a Tuesday at 11pm. The rhythm is slow, social, and outdoor. You'll eat better here for less money than anywhere else on this list.",
+      couple: "Madrid is built for couples who like to eat, drink, and wander. The terraza culture means you're always sitting outside somewhere with a glass of Ribera del Duero. Weekends are for the Rastro flea market, Retiro Park, or a day trip to Segovia or Toledo. The food markets (Mercado de San Fernando, Mercado de la Paz) are incredible for cooking at home. Late 30s/early 40s crowd thrives in neighborhoods like Chamberí, Almagro, and the quieter parts of Malasaña — places with character but without the tourist chaos. The social scene is warm and easy; Spaniards genuinely integrate you into their lives once you're in.",
+      culture: "Madrid has a particular energy — it's confident without being showy. World-class museums (Prado, Reina Sofía, Thyssen) that you'll actually revisit. Flamenco venues that range from tourist traps to deeply authentic tablaos. The nightlife is legendary but you don't have to participate — there's a whole ecosystem of wine bars, jazz spots, and quiet neighborhood places. The city has real seasons: hot dry summers, crisp winters, gorgeous springs. 300+ days of sunshine. The light is extraordinary.",
+      social: "Spanish is essential for real integration — you'll get by without it, but you'll be stuck in the expat bubble. The good news: Marinés being a native speaker changes everything here. Spaniards socialize late and slowly build deep friendships. The culture is physical (cheek kisses, close talking) and emotionally warm. Expect bureaucratic frustration — the paperwork never ends — but people are genuinely helpful once you're face to face. Madrid has a large and growing international community (~29% of residents), but it hasn't lost its Spanish soul.",
+      escape: "Sierra de Guadarrama mountains (45 min), Segovia, Toledo, Ávila are all day-trip distance. Cheap flights everywhere in Europe. The AVE high-speed train gets you to Barcelona in 2.5 hours, Seville in 2.5 hours. Wine regions (Ribera del Duero, Rueda, La Mancha) are all within a couple hours."
+    }
+  },
+  {
+    name: "Barcelona", country: "Spain", flag: "🇪🇸",
+    color: "#004D98", accent: "#5cb8ff",
+    foodDrink: 5, walkability: 5, weather: 5, socialWarmth: 4, languageBarrier: 3, culturalDepth: 5,
+    pace: "Mediterranean, beach-influenced",
+    bestFor: "Couples who want the Spanish lifestyle plus beach access and a design-forward city",
+    honest: "The tourist hordes are genuinely overwhelming in summer. Rental market is brutal and getting worse. Pickpocketing is a real quality-of-life issue. The Catalan political situation creates a layer of social complexity.",
+    sections: {
+      daily: "Similar Spanish rhythm to Madrid but with the beach layered in. You might start the day with a swim at Barceloneta before work. The same late lunch and late dinner culture applies, but Barcelona has a slightly more Mediterranean ease — less intensity than Madrid's capital-city energy. Catalan culture adds a layer: the language, the independence politics, the distinct food traditions. Vermut hour on Sunday mornings is sacred. The Gothic Quarter and Eixample give you that old-European-city-on-foot experience. But the tourism pressure is real and relentless in the center.",
+      couple: "The beach-city combo is Barcelona's killer feature. You can have a morning meeting, bike to lunch in Gràcia, and be on the sand by 5pm. The food scene is different from Madrid — more seafood-forward, more Catalan traditions (pa amb tomàquet, escalivada, fideuà). The neighborhoods have strong identities: Gràcia feels like a village, Sant Antoni is the cool-kid brunch spot, Poblenou is the tech/creative hub. For a couple in their 40s, Gràcia or upper Eixample gives you the right balance of life and calm.",
+      culture: "Gaudí architecture makes the city visually unlike anywhere else. Strong design and creative culture. More startup/tech energy than Madrid. The Catalan identity runs deep — locals are proud and political about it. There's a tension between the international/tourist Barcelona and the local Catalan Barcelona that you'll navigate constantly. The arts scene is vibrant: MACBA, Fundació Miró, incredible street art, live music. Summers are hot and humid but the sea breeze helps.",
+      social: "Trickier than Madrid. Catalans can be more reserved initially, and the dual language situation (Catalan + Spanish) means integration has an extra layer. Some Catalans view Spanish-speaking newcomers with mild suspicion. That said, the massive expat community means you won't lack for social connections. Learning some Catalan goes a long way toward earning local respect. The city's identity crisis — locals vs. tourists vs. expats vs. digital nomads — is a real undercurrent.",
+      escape: "Costa Brava (1–2 hours), Pyrenees (2–3 hours for hiking/skiing), wine regions of Penedès and Priorat nearby. Montserrat is a stunning day trip. France is just across the border."
+    }
+  },
+  {
+    name: "Brussels", country: "Belgium", flag: "🇧🇪",
+    color: "#FDDA24", accent: "#ffe066",
+    foodDrink: 4, walkability: 4, weather: 2, socialWarmth: 3, languageBarrier: 4, culturalDepth: 3,
+    pace: "Moderate, EU-bubble rhythm",
+    bestFor: "Couples who prioritize travel connectivity and don't mind grey skies",
+    honest: "The city can feel neglected and rough around the edges. Safety varies sharply by neighborhood. The weather is genuinely depressing for months. Making deep local friendships is hard. Traffic is terrible.",
+    sections: {
+      daily: "Brussels runs on a more Northern European schedule — earlier dinners, earlier bedtimes. But the EU bubble gives it a strange international energy that's hard to find elsewhere. Your daily life revolves around your commune (neighborhood): Ixelles for the expat scene, Saint-Gilles for bohemian vibes, Uccle for quiet residential life. The beer culture is extraordinary — not in a frat-party way, but in a \"there are 1,500 unique beers and every one has its own glass\" way. Frites stands are on every corner. The weather is honestly rough — grey, rainy, and cold for much of the year.",
+      couple: "Brussels works for couples who are self-contained and don't need the city to constantly entertain them. The restaurant scene punches way above its weight — Belgium has more Michelin stars per capita than France. Weekend markets at Place du Jeu de Balle, beer tastings, museum hopping (Magritte Museum, Art & History). The city is compact enough that you can bike or tram everywhere. But it lacks the natural warmth of Southern European cities — your social life will lean heavily on the expat community rather than integrating with Belgians, who can be reserved.",
+      culture: "Brussels is quirky and unpretentious. Art Nouveau architecture, surrealist art tradition (Magritte), comic book murals on buildings. The EU institutional presence gives it a cosmopolitan-but-bureaucratic feel. It's a city that grows on you rather than dazzling on first impression. The bilingual French/Dutch split creates a unique cultural tension. Nightlife is decent but not extraordinary — beer bars and apéro culture are the real draws. Sundays are very quiet.",
+      social: "The EU bubble is both a blessing and a curse. You'll meet tons of internationals immediately, but many are on 2–3 year rotations and leave. Making Belgian friends takes serious effort — they're friendly but keep their circles tight. The language situation is complex (French in Brussels, Dutch in Flanders), and most locals appreciate any effort to learn. English gets you far in the expat world but not with local Belgians.",
+      escape: "Bruges and Ghent are gorgeous day trips (1 hour). Antwerp is 45 min. Paris is 1.5 hours by Thalys. London is 2 hours by Eurostar. Amsterdam is 2 hours. Central location is genuinely Brussels' superpower for travel."
+    }
+  },
+  {
+    name: "Antwerp", country: "Belgium", flag: "🇧🇪",
+    color: "#E30613", accent: "#ff7979",
+    foodDrink: 4, walkability: 5, weather: 2, socialWarmth: 3, languageBarrier: 3, culturalDepth: 4,
+    pace: "Compact, village-in-a-city feel",
+    bestFor: "Couples who want charm, design culture, and a human-scale city",
+    honest: "It's small — if you need big-city energy, you'll get restless. The tech job market is limited. The weather is the same grey Belgian reality. Dutch is expected for real integration.",
+    sections: {
+      daily: "Antwerp has the charm that Brussels lacks. It's a compact, walkable city with beautiful Flemish architecture, a thriving fashion and design scene, and a more cohesive identity than Brussels. Daily life is pleasant — great bakeries, excellent restaurants for a city this size, a diamond district that adds a unique international flavor. The Flemish culture is more orderly and clean than francophone Brussels. Shops close earlier, people eat dinner earlier (7–8pm), and Sundays are quiet. The port gives the city a working-class backbone underneath the fashion-world polish.",
+      couple: "Antwerp is underrated for couples. The restaurant scene is excellent and less pretentious than Brussels. The Zurenborg neighborhood has some of the most beautiful Art Nouveau architecture in Europe. Weekend life involves the Saturday market at Groenplaats, exploring the MAS museum area along the docks, and biking along the Scheldt. It's the kind of city where you develop \"your\" bakery, \"your\" wine bar, \"your\" cheese shop. The scale is human — you'll run into people you know. For a couple who doesn't need a massive city, this intimacy is lovely.",
+      culture: "Fashion capital (the Antwerp Six, Royal Academy of Fine Arts), diamond trade, Rubens' hometown. The MAS museum is world-class. The city has a creative, slightly edgy energy — more interesting than its size would suggest. Flemish culture values directness, quality, and understated style. The food culture borrows from both French and Dutch traditions. Beer scene is as good as Brussels but more intimate.",
+      social: "Flemish people can be initially reserved but are warmer than Brusselois once you're in. Dutch is the language — and the Flemish take it seriously. English is widely spoken but making real local connections requires at least conversational Dutch. The expat community is smaller than Brussels, which means fewer ready-made social networks but also less transience. People who move to Antwerp tend to stay.",
+      escape: "Brussels (45 min), Bruges (1.5 hours), Dutch border towns, Ghent (1 hour). Good train connections throughout Belgium and to the Netherlands."
+    }
+  },
+  {
+    name: "Amsterdam", country: "Netherlands", flag: "🇳🇱",
+    color: "#FF6B00", accent: "#ffaa5c",
+    foodDrink: 4, walkability: 5, weather: 2, socialWarmth: 3, languageBarrier: 5, culturalDepth: 5,
+    pace: "Efficient, bike-paced, gezellig",
+    bestFor: "Couples who want world-class culture, total English accessibility, and bike-centric life",
+    honest: "The housing market is brutal. The weather will get to you — it's grey and wet for 6+ months. The city can feel small and repetitive after a couple of years. Dutch directness can read as rudeness if you're not prepared. Summers are short but magical.",
+    sections: {
+      daily: "You will bike everywhere. This isn't optional — it's the fundamental mode of existence. Rain, wind, groceries, dress clothes: you bike. The city is small and canal-gridded, and within a few months you'll know every shortcut. Daily life has a cozy, gezellig quality — the Dutch concept of convivial warmth. Coffee culture is strong (not espresso-focused like Spain, more filter/specialty). Dinner is early by Southern European standards (6:30–7:30pm). Borrel (after-work drinks with snacks) is the social ritual. The city is gorgeous but compact — you'll see the same faces, the same streets, and that intimacy is either comforting or claustrophobic.",
+      couple: "Amsterdam is fantastic for an active, outdoorsy couple. Biking along the canals, weekend trips to the Vondelpark, exploring different neighborhoods (De Pijp for the Albert Cuyp market, Jordaan for boutiques, Amsterdam-Noord for the creative/industrial scene). The food scene has evolved massively — great Indonesian, Surinamese, and modern Dutch restaurants. The city is incredibly liberal and tolerant. For a couple without kids, the nightlife and cultural calendar are endless: Concertgebouw for classical music, Paradiso and Melkweg for live music, world-class museums (Rijksmuseum, Stedelijk, Van Gogh). But the housing crisis is real — finding a good apartment is genuinely difficult and expensive.",
+      culture: "Amsterdam punches above its weight culturally. The museum density is extraordinary. The design and creative scene is world-class. Dutch culture values directness (sometimes to a fault), egalitarianism, and pragmatism. The city has a sophisticated, cosmopolitan feel but without the pretension of Paris or London. Everyone speaks flawless English — you can live here for years without learning Dutch, though locals will respect you more if you try. The flip side: the tourist pressure in the center is Amsterdam's biggest quality-of-life issue.",
+      social: "The Dutch are famously direct and friendly but not easily \"close.\" The saying goes: the Dutch will happily invite you to a party but never to dinner. Making deep friendships with locals takes years and intentional effort. The expat community is enormous and well-organized, so you won't lack for social life — but many expats report feeling like they're living in a parallel universe from Dutch society. Learning Dutch helps enormously but isn't strictly necessary for daily life. The 'gezellig' warmth is real but takes time to access.",
+      escape: "Haarlem (15 min), Utrecht (30 min), The Hague/beach (45 min), Rotterdam (40 min). Schiphol is one of Europe's best-connected airports. Belgium, Germany, and the North Sea coast are all within easy reach. The Dutch countryside (polders, windmills, Texel island) is surprisingly beautiful."
+    }
+  },
+  {
+    name: "Rotterdam", country: "Netherlands", flag: "🇳🇱",
+    color: "#009739", accent: "#5cd6a0",
+    foodDrink: 4, walkability: 4, weather: 2, socialWarmth: 3, languageBarrier: 5, culturalDepth: 4,
+    pace: "Creative, gritty, modern",
+    bestFor: "Couples who prefer creative energy over prettiness and want a real working city",
+    honest: "It's not as charming as Amsterdam — that's by design, but it matters on grey November days. The architecture is love-it-or-hate-it. Some neighborhoods feel disconnected. The nightlife doesn't match Amsterdam's range.",
+    sections: {
+      daily: "Rotterdam feels like a different country from Amsterdam. Bombed flat in WWII and rebuilt with bold modern architecture, it has a gritty, creative energy. The Markthal is the city's food cathedral. The port is Europe's largest and gives the city an industrial backbone. Daily life is similar to Amsterdam — biking, borrel, early dinners — but with a more diverse, working-class edge. The neighborhoods are more spread out and less picturesque than Amsterdam's canal ring, but also less tourist-saturated. You actually feel like you live in a real city rather than a living museum.",
+      couple: "Rotterdam is the city for couples who find Amsterdam too precious. The food scene is surprisingly good (Indonesian, Surinamese, Turkish, modern Dutch). The Witte de Withstraat area is the cultural spine — galleries, bars, restaurants. The architecture nerd in you will be constantly stimulated (Cube Houses, Erasmus Bridge, Depot Boijmans). Weekend activities: Fenix Food Factory, biking along the Maas, exploring the Delfshaven historic quarter (the one old area that survived the bombing). The Katendrecht neighborhood has gone from dodgy port district to one of the coolest spots in the Netherlands.",
+      culture: "Rotterdam has a chip on its shoulder about Amsterdam, and that underdog energy fuels a lot of creativity. The art scene is edgier (Boijmans Van Beuningen, WORM). Music and club culture are strong. The city is the most ethnically diverse in the Netherlands — nearly 50% of residents have a migration background. This diversity shows up in the food, the street life, and the culture in ways that Amsterdam's diversity doesn't always. It's a city that's actively reinventing itself.",
+      social: "Similar dynamics to Amsterdam but slightly easier — the city is less transient, the expat community is smaller but tighter, and locals have a bit more of a working-class warmth. The South Rotterdam neighborhoods are very multicultural and you'll hear dozens of languages on the street. Dutch is the expectation for deep integration but English gets you through daily life. The university brings in a younger international crowd.",
+      escape: "The Hague/beach (20 min), Amsterdam (40 min), Delft (15 min, gorgeous historic town), Kinderdijk windmills (30 min). Same excellent Schiphol access as the rest of the Randstad."
+    }
+  },
+  {
+    name: "The Hague", country: "Netherlands", flag: "🇳🇱",
+    color: "#003DA5", accent: "#6ba3ff",
+    foodDrink: 4, walkability: 4, weather: 2, socialWarmth: 4, languageBarrier: 5, culturalDepth: 3,
+    pace: "Calm, diplomatic, beach-adjacent",
+    bestFor: "Couples who want Dutch quality of life without Amsterdam's intensity, plus beach access",
+    honest: "Nightlife is modest. The cultural calendar is thinner than Amsterdam's. It can feel sleepy if you need constant stimulation. The beach is North Sea beach — beautiful but cold.",
+    sections: {
+      daily: "The Hague is the most underrated city on this list. It has the beach (Scheveningen), the international institutions, the royal palaces, and a surprisingly vibrant restaurant and bar scene. Daily life feels more residential and less hectic than Amsterdam. You bike everywhere (it's the Netherlands), but the pace is calmer. The Grote Markt area is the social hub. The international community is well-established thanks to the embassies, the International Court of Justice, and various NGOs. It's a city that feels like it has its life figured out.",
+      couple: "For a couple in their 40s, The Hague might be the Goldilocks Dutch city. Big enough to never be bored, small enough to feel like home. The beach is 15 minutes by tram — you can watch the sunset over the North Sea after work. The restaurant scene is diverse and excellent (Indonesian, Japanese, Italian, modern Dutch). The Denneweg and Noordeinde streets are beautiful for evening strolls and window shopping. The Mauritshuis (home of Girl with a Pearl Earring) is intimate and world-class. Housing is more attainable than Amsterdam, and the neighborhoods (Statenkwartier, Benoordenhout, Zeeheldenkwartier) are genuinely lovely.",
+      culture: "The Hague has a diplomatic sophistication — it's the seat of government, the home of international law, and the royal residence. This gives it a more serious, slightly formal tone compared to Amsterdam's bohemian energy. But underneath that polish there's a genuine warmth. The Hague played a real role in the development of electronic music (Hague school of acid). The Escher Museum is fantastic. The Binnenhof (parliament complex) is being renovated but remains architecturally striking. The mix of beach culture and governmental gravitas is uniquely The Hague.",
+      social: "Easier than Amsterdam in many ways. The international community is established and stable (less transient than Brussels' EU bubble). Many expats who came for a 2-year posting are still there 10 years later. The Dutch directness applies here too, but the mix of nationalities softens the social dynamics. English is perfectly fine for all daily interactions. The embassy crowd, the international school network, and the beach-bar scene create natural social on-ramps for newcomers.",
+      escape: "Amsterdam (50 min), Rotterdam (25 min), Delft (15 min, gorgeous historic town), Leiden (20 min). Beach is literally in the city. Schiphol is about 30 minutes by train."
+    }
+  },
+  {
+    name: "Vienna", country: "Austria", flag: "🇦🇹",
+    color: "#C8102E", accent: "#ff6b8a",
+    foodDrink: 4, walkability: 5, weather: 3, socialWarmth: 2, languageBarrier: 2, culturalDepth: 5,
+    pace: "Refined, structured, elegant",
+    bestFor: "Couples who want imperial beauty, classical music, wine culture, and world-class livability",
+    honest: "Making Viennese friends is genuinely difficult and takes years. German is required — there's no getting around this. The culture is more formal and reserved than anything else on this list. Shops closed on Sundays is frustrating. Winters are cold, grey, and long.",
+    sections: {
+      daily: "Vienna operates on a rhythm of refined routine. Morning starts at a Kaffeehaus — not a quick espresso, but a proper sit-down with a Melange and a newspaper. The city is impeccably clean, safe, and organized. Public transit is world-class and costs €365/year (not a typo). The architecture is imperial-scale everywhere you look. Daily errands feel elevated because the buildings are beautiful and the parks are manicured. Shops close early and Sundays are quiet — this is non-negotiable. Dinner is around 7–8pm, followed by wine at a Heuriger (wine tavern) in the surrounding hills. The pace is deliberate, structured, and elegant.",
+      couple: "Vienna is extraordinary for a couple that values beauty, music, food, and calm. The Naschmarkt is one of Europe's best food markets. Wine culture is serious — Vienna is the only major city with significant vineyards within city limits. The Heurige tradition (sitting in a wine garden with cold cuts and local wine) is one of Europe's great pleasures. The opera, the symphony, the Musikverein — if you have any interest in classical music, Vienna is literally the center of the universe. For a couple, evening life means wine bars (try the 7th and 8th districts), the occasional opera or theater performance, and long walks along the Danube Canal. The four seasons are gorgeous — real autumn colors, real snowy winters, real spring blossoms.",
+      culture: "Vienna is the most culturally dense city on this list. The Habsburgs built a city designed to impress, and it still does — Schönbrunn Palace, the Belvedere, St. Stephen's Cathedral, the Ringstrasse. But it's not frozen in amber. The MuseumsQuartier is one of Europe's best contemporary art complexes. The food scene has modernized significantly — there's excellent Turkish, Balkan, and Asian food alongside the traditional Schnitzel and Tafelspitz. The city has a coffeehouse intellectual tradition that's genuinely alive — people still sit for hours reading, writing, and arguing. There's a formality to Viennese culture that can feel stuffy or elegant depending on your temperament.",
+      social: "This is Vienna's biggest weakness. Viennese people are polite but famously hard to befriend. InterNations surveys consistently rank Vienna among the least welcoming cities for expats. The local social culture is built on long-standing friend groups formed in school — breaking in as an outsider takes serious patience and usually requires German. The expat community exists but is smaller and less organized than in Amsterdam or Brussels. German is essential for real integration; without it, you'll stay on the surface. The flip side: once a Viennese person accepts you as a friend, the loyalty is deep and lifelong.",
+      escape: "The Alps (1–2 hours for hiking/skiing), Wachau Valley wine region (1 hour — stunning Danube scenery), Bratislava (1 hour), Budapest (2.5 hours), Prague (4 hours). Vienna's position at the crossroads of Central Europe is excellent. The Wienerwald (Vienna Woods) are right on the city's doorstep for hiking and cycling."
+    }
   }
+];
 
-  function setBothWorking(on) {
-    document.body.classList.toggle('both-working', on);
-    document.getElementById('lbl-d').classList.toggle('active', !on);
-    document.getElementById('lbl-both').classList.toggle('active', on);
+const sectionLabels = {
+  daily: "A Day Here",
+  couple: "Couple Life",
+  culture: "Culture & Vibe",
+  social: "Making Friends",
+  escape: "Weekend Escapes"
+};
 
-    // Update income badges that have data-base/data-add
-    document.querySelectorAll('.income-badge[data-base]').forEach(badge => {
-      const base = parseInt(badge.dataset.base);
-      const add  = parseInt(badge.dataset.add);
-      badge.textContent = on
-        ? '€' + (base + add).toLocaleString() + ' / mo'
-        : '€' + base.toLocaleString() + ' / mo';
-    });
+const ratingLabels = {
+  foodDrink: "Food & Drink",
+  walkability: "Walkability",
+  weather: "Weather",
+  socialWarmth: "Social Warmth",
+  languageBarrier: "English Ease",
+  culturalDepth: "Cultural Depth"
+};
 
-    // Bar chart update
-    const MAX_D    = 4775;
-    const MAX_BOTH = 8847;
-    const MAX = on ? MAX_BOTH : MAX_D;
+let activeCity = 0;
+let activeSection = "daily";
 
-    document.querySelectorAll('.bar-row').forEach(row => {
-      const base  = parseInt(row.dataset.base);
-      const both  = parseInt(row.dataset.both);
-      const basePct = (base / MAX * 100).toFixed(1);
-      const fill  = row.querySelector('.bar-fill');
-      const fillB = row.querySelector('.bar-fill-both');
-      const label = row.querySelector('.bar-value');
+function makeDots(value, color) {
+  return [1,2,3,4,5].map(i =>
+    `<div class="dot${i <= value ? ' filled' : ''}" style="${i <= value ? 'background:' + color : ''}"></div>`
+  ).join('');
+}
 
-      fill.style.width = basePct + '%';
+function render() {
+  const city = cities[activeCity];
 
-      if (on) {
-        const bothPct = (both / MAX * 100).toFixed(1);
-        const addPct  = ((both - base) / MAX * 100).toFixed(1);
-        fillB.style.left  = basePct + '%';
-        fillB.style.width = addPct + '%';
-        label.style.left  = 'calc(' + bothPct + '% + 0.4rem)';
-        label.style.right = 'auto';
-        label.style.color = 'var(--ink)';
-        // For the transfer-only rows (base===both), no additive bar
-        if (base === both) { fillB.style.width = '0%'; }
-        label.innerHTML = '€' + both.toLocaleString();
-      } else {
-        fillB.style.width = '0%';
-        if (base === MAX_D) {
-          label.style.right = '0.5rem'; label.style.left = 'auto'; label.style.color = 'white';
-        } else {
-          label.style.left = 'calc(' + basePct + '% + 0.4rem)';
-          label.style.right = 'auto'; label.style.color = 'var(--ink)';
-        }
-        label.innerHTML = '€' + base.toLocaleString();
-      }
-    });
+  // Set CSS variables
+  document.documentElement.style.setProperty('--city-color', city.color);
+  document.documentElement.style.setProperty('--city-accent', city.accent);
 
-    document.getElementById('chartNote').textContent = on
-      ? 'Both D & M working · All figures household / month / euros'
-      : 'D working only · All figures household / month / euros';
-  }
+  // City tabs
+  document.getElementById('cityTabs').innerHTML = cities.map((c, idx) =>
+    `<button class="city-tab${idx === activeCity ? ' active' : ''}"
+      style="${idx === activeCity ? 'background:' + c.color + ';' : ''}"
+      onclick="setCity(${idx})">${c.flag} ${c.name}</button>`
+  ).join('');
+
+  // City header
+  document.getElementById('cityHeader').innerHTML = `
+    <div class="fade-in" style="background: linear-gradient(135deg, ${city.color}15, ${city.color}08);">
+      <div class="city-title-row">
+        <span class="flag">${city.flag}</span>
+        <h2>${city.name}</h2>
+        <span class="country">${city.country}</span>
+      </div>
+      <div class="best-for">${city.bestFor}</div>
+      <div class="ratings-grid">
+        ${Object.entries(ratingLabels).map(([key, label]) => `
+          <div class="rating-item">
+            <label>${label}</label>
+            <div class="dots">${makeDots(city[key], city.accent)}</div>
+          </div>
+        `).join('')}
+      </div>
+      <div class="pace-row">
+        <label>Pace</label>
+        <div class="value">${city.pace}</div>
+      </div>
+    </div>
+  `;
+  document.getElementById('cityHeader').style.borderLeftColor = city.color;
+  document.getElementById('cityHeader').style.background = `linear-gradient(135deg, ${city.color}15, ${city.color}08)`;
+
+  // Section tabs
+  document.getElementById('sectionTabs').innerHTML = Object.entries(sectionLabels).map(([id, label]) =>
+    `<button class="section-tab${id === activeSection ? ' active' : ''}"
+      style="${id === activeSection ? 'border-color:' + city.accent + '40; background:' + city.accent + '12; color:' + city.accent : ''}"
+      onclick="setSection('${id}')">${label}</button>`
+  ).join('');
+
+  // Content
+  document.getElementById('contentBlock').innerHTML =
+    `<p class="fade-in">${city.sections[activeSection]}</p>`;
+
+  // Honest take
+  document.getElementById('honestBlock').innerHTML = `
+    <div class="label">The honest take</div>
+    <p>${city.honest}</p>
+  `;
+
+  // All cities
+  document.getElementById('allCities').innerHTML = cities.map((c, idx) => `
+    <button class="city-row" onclick="setCity(${idx}); window.scrollTo({top:0,behavior:'smooth'})"
+      style="${idx === activeCity ? 'background:' + c.color + '18' : ''}">
+      <span class="flag">${c.flag}</span>
+      <div class="info">
+        <div class="name" style="${idx === activeCity ? 'color:' + c.accent : ''}">${c.name}</div>
+        <div class="pace-label">${c.pace}</div>
+      </div>
+      <div class="summary">${c.bestFor}</div>
+    </button>
+  `).join('');
+}
+
+function setCity(idx) {
+  activeCity = idx;
+  activeSection = "daily";
+  render();
+}
+
+function setSection(id) {
+  activeSection = id;
+  render();
+}
+
+render();
 </script>
 </body>
 </html>
